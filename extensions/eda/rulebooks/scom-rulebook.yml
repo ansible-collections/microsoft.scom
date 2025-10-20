@@ -1,0 +1,17 @@
+---
+- name: Listen for events on Microsoft SCOM Alerts
+  hosts: localhost
+  sources:
+    - microsoft.scom.scom_plugin:
+        scom_server: 10.10.10.10
+        username: ECO\Administrator
+        password: Password1!
+        criteria: "(ResolutionState = '0')"
+        interval: 10
+        ntlm_token_refresh: 30
+  rules:
+    - name: New record created
+      condition: event.id is defined
+      action:
+        debug:
+          msg: "New SCOM Alert received! Alert Name: {{ event | default('N/A') }}"
