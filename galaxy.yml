@@ -1,25 +1,24 @@
 ---
 # See https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
 
-namespace: community
-name: FIXME
+namespace: microsoft
+name: scom
 version: 0.1.0
 readme: README.md
 authors:
-  - YOUR NAME (github.com/YOURGITHUB)
-description: null
+  - Hen Yaish (github.com/Yaish25491)
+  - Shahar Golshani (github.com/shahargolshani)
+  - Mike Morency (github.com/mikemorency)
+description:  Ansible Collection for interacting with Microsoft System Center Operations Manager
 license_file: LICENSE
 tags:
-  # tags so people can search for collections https://galaxy.ansible.com/search
-  # tags are all lower-case, no spaces, no dashes.
-  - example1
-  - example2
-  # You must have one of the tags in the following link
-  # to satisfy Ansible Lint https://ansible.readthedocs.io/projects/lint/rules/galaxy
-repository: https://github.com/ansible-collections/community.REPO_NAME
-# documentation: https://github.com/ansible-collection-migration/community.REPO_NAME/tree/main/docs
-homepage: https://github.com/ansible-collections/community.REPO_NAME
-issues: https://github.com/ansible-collections/community.REPO_NAME/issues
+  - eda
+  - scom
+  - monitoring
+  - microsoft
+repository: https://github.com/ansible-collections/microsoft.scom
+homepage: https://github.com/ansible-collections/microsoft.scom
+issues: https://github.com/ansible-collections/microsoft.scom/issues
 build_ignore:
   # https://docs.ansible.com/ansible/devel/dev_guide/developing_collections_distributing.html#ignoring-files-and-folders
   - .gitignore
