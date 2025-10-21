@@ -6,17 +6,20 @@ name: scom
 version: 0.1.0
 readme: README.md
 authors:
-  - Hen Yaish (github.com/Yaish25491)
+  - Hen Yaish (github.com/yaish25491)
   - Shahar Golshani (github.com/shahargolshani)
   - Mike Morency (github.com/mikemorency)
-description:  Ansible Collection for interacting with Microsoft System Center Operations Manager
+description: Ansible collection for Microsoft System Center Operations Manager (SCOM) automation
 license_file: LICENSE
 tags:
-  - eda
+  - microsoft
   - scom
   - monitoring
-  - microsoft
+  - operations
+  - windows
+  - infrastructure
 repository: https://github.com/ansible-collections/microsoft.scom
+documentation: https://github.com/ansible-collections/microsoft.scom/tree/main/docs
 homepage: https://github.com/ansible-collections/microsoft.scom
 issues: https://github.com/ansible-collections/microsoft.scom/issues
 build_ignore:
