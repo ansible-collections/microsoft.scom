@@ -1,3 +1,8 @@
----
 ancestor: null
-releases: {}
+releases:
+  1.0.0:
+    changes:
+      release_summary: First release of the microsoft.scom collection
+    fragments:
+    - release-summary.yml
+    release_date: '2025-11-04'

@@ -68,19 +68,6 @@ The process of decision making in this collection is based on discussing and fin
 
 Every voice is important. If you have something on your mind, create an issue or dedicated discussion and let's discuss it!
 
-## Tested with Ansible
-
-
-## External requirements
-
-
-### Supported connections
-
-## Included content
-
-
-## Using this collection
-
 
 ### Installing the Collection from Ansible Galaxy
 
@@ -108,6 +95,24 @@ ansible-galaxy collection install microsoft.scom:==0.1.0
 ```
 
 See [using Ansible collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html) for more details.
+
+### Using the Collection SCOM Plugin On AAP/EDA 
+
+In order to use the collection plugin `scom_plugin` on your AAP/EDA you have to have it on the EDA Decision Environment
+
+To build an EDA Decision Environment use `microsoft.scom/Containerfile` 
+
+```bash
+podman build -t scom-eda-de:1.0.0 .
+```
+
+Push the image to your container registry
+
+Use the image to create decision environment in EDA
+
+In EDA Rulebook Activations create rulebook activation with the created decision environment 
+And with Rulebook `microsoft.scom/extensions/eda/rulebooks/scom-rulebook.yml`
+
 
 ## Release notes
 
