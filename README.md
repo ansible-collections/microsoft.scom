@@ -69,7 +69,7 @@ The process of decision making in this collection is based on discussing and fin
 Every voice is important. If you have something on your mind, create an issue or dedicated discussion and let's discuss it!
 
 
-### Installing the Collection from Ansible Galaxy
+### Installation
 
 Before using this collection, you need to install it with the Ansible Galaxy command-line tool:
 ```bash
@@ -88,7 +88,7 @@ Note that if you install the collection from Ansible Galaxy, it will not be upgr
 ansible-galaxy collection install microsoft.scom --upgrade
 ```
 
-You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version (please report an issue in this repository). Use the following syntax to install version `0.1.0`:
+You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version (please report an issue). Use the following syntax to install version `0.1.0`:
 
 ```bash
 ansible-galaxy collection install microsoft.scom:==0.1.0
@@ -118,8 +118,10 @@ And with Rulebook `microsoft.scom/extensions/eda/rulebooks/scom-rulebook.yml`
 
 See the [changelog](https://github.com/ansible-collections/microsoft.scom/tree/main/CHANGELOG.rst).
 
-## Roadmap
+## Support
 
+As Red Hat Ansible Certified Content, this collection is entitled to support through Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner.
+If a support case cannot be opened with Red Hat and the collection has been obtained either from Galaxy or GitHub, there may community help available on the [Ansible Forum](https://forum.ansible.com/).
 
 ## More information
 
