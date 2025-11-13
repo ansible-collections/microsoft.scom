@@ -4,5 +4,17 @@ releases:
     changes:
       release_summary: First release of the microsoft.scom collection
     fragments:
-    - release-summary.yml
+      - release-summary.yml
     release_date: '2025-11-04'
+  1.0.1:
+    changes:
+      minor_changes:
+        - prepare_release.yml - added proper task names, FQCN usage, and pipefail safety
+          for shell commands.
+        - scom_plugin - added HTTP status code constants for better code maintainability.
+        - scom_plugin - improved code quality and linting compliance with type annotations,
+          proper error handling, and modern Python syntax.
+        - scom_plugin - improved logging configuration for CLI testing.
+    fragments:
+      - scom-plugin-code-quality.yml
+    release_date: '2025-11-13'
