@@ -3,11 +3,11 @@
 
 namespace: microsoft
 name: scom
-version: 1.0.0
+version: 1.0.1
 readme: README.md
 authors:
   - Microsoft SCOM Collection Contributors (@ansible-collections)
-description:  Ansible Collection for interacting with Microsoft System Center Operations Manager
+description: Ansible Collection for interacting with Microsoft System Center Operations Manager
 license_file: LICENSE
 tags:
   - eda
