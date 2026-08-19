@@ -4,12 +4,12 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.22.0" name="antsibull-docs" />
+<meta content="2.26.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Microsoft.Scom &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=b54c304f" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/rtd-ethical-ads.css?v=289b023e" />
 
@@ -18,11 +18,11 @@
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="microsoft.scom.scom_plugin module – Event Driven Ansible source for System Center Operations Manager (SCOM) Alerts." href="scom_plugin_module.html" />
+    <link rel="next" title="microsoft.scom.alert module – Manage the state of a SCOM alert." href="alert_module.html" />
     <link rel="prev" title="Collections in the Microsoft Namespace" href="../index.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
@@ -127,7 +127,7 @@
              
   <section id="microsoft-scom">
 <span id="plugins-in-microsoft-scom"></span><h1>Microsoft.Scom<a class="headerlink" href="#microsoft-scom" title="Link to this heading"></a></h1>
-<p>Collection version 1.0.0</p>
+<p>Collection version 2.0.0</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#description" id="id1">Description</a></p></li>
@@ -137,7 +137,7 @@
 </nav>
 <section id="description">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Description</a><a class="headerlink" href="#description" title="Link to this heading"></a></h2>
-<p>Ansible Collection for interacting with Microsoft System Center Operations Manager</p>
+<p>Ansible Collection for managing Microsoft System Center Operations Manager (SCOM). Includes PowerShell-based Ansible modules for alert management, maintenance mode, and management group operations, as well as an Event Driven Ansible (EDA) source plugin for real-time alert monitoring.</p>
 <p><strong>Author:</strong></p>
 <ul class="simple">
 <li><p>Microsoft SCOM Collection Contributors (&#64;ansible-collections)</p></li>
@@ -167,7 +167,8 @@
 <section id="modules">
 <span id="module-plugins-in-microsoft-scom"></span><h3>Modules<a class="headerlink" href="#modules" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="scom_plugin_module.html#ansible-collections-microsoft-scom-scom-plugin-module"><span class="std std-ref">scom_plugin module</span></a> – Event Driven Ansible source for System Center Operations Manager (SCOM) Alerts.</p></li>
+<li><p><a class="reference internal" href="alert_module.html#ansible-collections-microsoft-scom-alert-module"><span class="std std-ref">alert module</span></a> – Manage the state of a SCOM alert.</p></li>
+<li><p><a class="reference internal" href="alert_info_module.html#ansible-collections-microsoft-scom-alert-info-module"><span class="std std-ref">alert_info module</span></a> – Retrieve information about SCOM alerts.</p></li>
 </ul>
 <div class="toctree-wrapper compound">
 </div>
@@ -186,7 +187,7 @@
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Collections in the Microsoft Namespace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="scom_plugin_module.html" class="btn btn-neutral float-right" title="microsoft.scom.scom_plugin module – Event Driven Ansible source for System Center Operations Manager (SCOM) Alerts." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="alert_module.html" class="btn btn-neutral float-right" title="microsoft.scom.alert module – Manage the state of a SCOM alert." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
