@@ -7,7 +7,7 @@
 <meta content="2.26.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>microsoft.scom.management_pack_info module – Retrieve information about installed SCOM management packs. &mdash; Ansible collections  documentation</title>
+  <title>microsoft.scom.pending_agent_request_info module – Retrieve information about SCOM pending agent management requests. &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=b54c304f" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
@@ -22,8 +22,8 @@
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="microsoft.scom.pending_agent_request module – Approve or Reject SCOM manual agent management requests." href="pending_agent_request_module.html" />
-    <link rel="prev" title="microsoft.scom.management_pack module – Import or remove SCOM management packs." href="management_pack_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="Index of all Modules" href="../../index_module.html" />
+    <link rel="prev" title="microsoft.scom.pending_agent_request module – Approve or Reject SCOM manual agent management requests." href="pending_agent_request_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -115,10 +115,10 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Microsoft Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Microsoft.Scom</a></li>
-      <li class="breadcrumb-item active">microsoft.scom.management_pack_info module – Retrieve information about installed SCOM management packs.</li>
+      <li class="breadcrumb-item active">microsoft.scom.pending_agent_request_info module – Retrieve information about SCOM pending agent management requests.</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
-              <a href="https://github.com/ansible-collections/microsoft.scom/edit/main/plugins/modules/management_pack_info.yml?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/ansible-collections/microsoft.scom/edit/main/plugins/modules/pending_agent_request_info.yml?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -128,8 +128,8 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-microsoft-scom-management-pack-info-module"></span><section id="microsoft-scom-management-pack-info-module-retrieve-information-about-installed-scom-management-packs">
-<h1>microsoft.scom.management_pack_info module – Retrieve information about installed SCOM management packs.<a class="headerlink" href="#microsoft-scom-management-pack-info-module-retrieve-information-about-installed-scom-management-packs" title="Link to this heading"></a></h1>
+  <span class="target" id="ansible-collections-microsoft-scom-pending-agent-request-info-module"></span><section id="microsoft-scom-pending-agent-request-info-module-retrieve-information-about-scom-pending-agent-management-requests">
+<h1>microsoft.scom.pending_agent_request_info module – Retrieve information about SCOM pending agent management requests.<a class="headerlink" href="#microsoft-scom-pending-agent-request-info-module-retrieve-information-about-scom-pending-agent-management-requests" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/microsoft/scom/">microsoft.scom collection</a> (version 2.0.0).</p>
@@ -137,8 +137,8 @@
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">microsoft.scom</span></code>.
 You need further requirements to be able to use this module,
-see <a class="reference internal" href="#ansible-collections-microsoft-scom-management-pack-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">microsoft.scom.management_pack_info</span></code>.</p>
+see <a class="reference internal" href="#ansible-collections-microsoft-scom-pending-agent-request-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">microsoft.scom.pending_agent_request_info</span></code>.</p>
 </div>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -153,12 +153,14 @@ see <a class="reference internal" href="#ansible-collections-microsoft-scom-mana
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Returns a list of installed SCOM management packs, optionally filtered by name, display name, or ID.</p></li>
-<li><p>This is an info module - it never makes changes and always returns <code class="docutils literal notranslate"><span class="pre">changed=false</span></code>.</p></li>
+<li><p>Returns the list of SCOM agents awaiting a management action, such as manual approval.</p></li>
+<li><p>Optionally filters to a single agent by its fully qualified domain name.</p></li>
+<li><p>This is a read-only module and never changes the SCOM environment.</p></li>
+<li><p>Supports check mode.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-microsoft-scom-management-pack-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<span id="ansible-collections-microsoft-scom-pending-agent-request-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>Must execute on the SCOM Management Server via WinRM</p></li>
@@ -177,27 +179,11 @@ see <a class="reference internal" href="#ansible-collections-microsoft-scom-mana
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-display_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-parameter-display-name"><strong>display_name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-display_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-agent_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-pending-agent-request-info-module-parameter-agent-name"><strong>agent_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-agent_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Filter by the display name of the management pack. Supports wildcards.</p>
-<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-management-pack-info-module-parameter-id"><span class="std std-ref"><span class="pre">id</span></span></a></strong></code>.</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-parameter-id"><strong>id</strong></p>
-<a class="ansibleOptionLink" href="#parameter-id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Filter by the GUID of the management pack.</p>
-<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-management-pack-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-management-pack-info-module-parameter-display-name"><span class="std std-ref"><span class="pre">display_name</span></span></a></strong></code>.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-parameter-name"><strong>name</strong></p>
-<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Filter by the identity name of the management pack. Supports wildcards.</p>
-<p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-management-pack-info-module-parameter-id"><span class="std std-ref"><span class="pre">id</span></span></a></strong></code>.</p>
+<td><div class="ansible-option-cell"><p>Restrict the result to the agent with this fully qualified domain name.</p>
+<p>When omitted, all pending management requests are returned.</p>
 </div></td>
 </tr>
 </tbody>
@@ -216,18 +202,18 @@ see <a class="reference internal" href="#ansible-collections-microsoft-scom-mana
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get all installed management packs</span>
-<span class="w">  </span><span class="nt">microsoft.scom.management_pack_info</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all_mps</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get all pending management requests</span>
+<span class="w">  </span><span class="nt">microsoft.scom.pending_agent_request_info</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pending</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get management packs matching a name pattern</span>
-<span class="w">  </span><span class="nt">microsoft.scom.management_pack_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Microsoft.SQLServer.*"</span>
-<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_mps</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get pending management requests for a specific agent</span>
+<span class="w">  </span><span class="nt">microsoft.scom.pending_agent_request_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">agent_name</span><span class="p">:</span><span class="w"> </span><span class="s">"web01.contoso.com"</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pending</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get a management pack by ID</span>
-<span class="w">  </span><span class="nt">microsoft.scom.management_pack_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">"36b62dc1-e525-e356-4e26-9d12e31ccd62"</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Show agents awaiting manual approval</span>
+<span class="w">  </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">pending.pending_agent_request</span> <span class="o">|</span> <span class="nf">selectattr</span><span class="o">(</span><span class="s1">'action_type'</span><span class="o">,</span> <span class="s1">'equalto'</span><span class="o">,</span> <span class="s1">'ManualApproval'</span><span class="o">)</span> <span class="o">|</span> <span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">'agent_name'</span><span class="o">)</span> <span class="o">|</span> <span class="nf">list</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 </section>
@@ -242,66 +228,42 @@ see <a class="reference internal" href="#ansible-collections-microsoft-scom-mana
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs"><strong>management_packs</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<div class="ansibleOptionAnchor" id="return-pending_agent_request"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-pending-agent-request-info-module-return-pending-agent-request"><strong>pending_agent_request</strong></p>
+<a class="ansibleOptionLink" href="#return-pending_agent_request" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of installed SCOM management packs matching the filter.</p>
+<td><div class="ansible-option-cell"><p>The list of pending agent management requests. Empty when none match.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/display_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-display-name"><strong>display_name</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/display_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-pending_agent_request/action_type"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-pending-agent-request-info-module-return-pending-agent-request-action-type"><strong>action_type</strong></p>
+<a class="ansibleOptionLink" href="#return-pending_agent_request/action_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Display name of the management pack.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The type of pending action (for example <code class="docutils literal notranslate"><span class="pre">ManualApproval</span></code>, <code class="docutils literal notranslate"><span class="pre">PushInstall</span></code>).</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-id"><strong>id</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-pending_agent_request/agent_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-pending-agent-request-info-module-return-pending-agent-request-agent-name"><strong>agent_name</strong></p>
+<a class="ansibleOptionLink" href="#return-pending_agent_request/agent_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>GUID of the management pack.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The fully qualified domain name of the pending agent.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/last_modified"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-last-modified"><strong>last_modified</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/last_modified" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-pending_agent_request/last_modified"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-pending-agent-request-info-module-return-pending-agent-request-last-modified"><strong>last_modified</strong></p>
+<a class="ansibleOptionLink" href="#return-pending_agent_request/last_modified" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Timestamp of the last modification (yyyy-MM-dd HH:mm:ss z).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The time the pending action was last modified.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-name"><strong>name</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="return-pending_agent_request/management_server_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-pending-agent-request-info-module-return-pending-agent-request-management-server-name"><strong>management_server_name</strong></p>
+<a class="ansibleOptionLink" href="#return-pending_agent_request/management_server_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Identity name of the management pack.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/sealed"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-sealed"><strong>sealed</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/sealed" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the management pack is sealed.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/time_created"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-time-created"><strong>time_created</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/time_created" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Timestamp the management pack was created (yyyy-MM-dd HH:mm:ss z).</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-management_packs/version"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-management-pack-info-module-return-management-packs-version"><strong>version</strong></p>
-<a class="ansibleOptionLink" href="#return-management_packs/version" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Version of the management pack.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The management server handling the pending action.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -332,8 +294,8 @@ see <a class="reference internal" href="#ansible-collections-microsoft-scom-mana
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="management_pack_module.html" class="btn btn-neutral float-left" title="microsoft.scom.management_pack module – Import or remove SCOM management packs." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pending_agent_request_module.html" class="btn btn-neutral float-right" title="microsoft.scom.pending_agent_request module – Approve or Reject SCOM manual agent management requests." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pending_agent_request_module.html" class="btn btn-neutral float-left" title="microsoft.scom.pending_agent_request module – Approve or Reject SCOM manual agent management requests." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../index_module.html" class="btn btn-neutral float-right" title="Index of all Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
