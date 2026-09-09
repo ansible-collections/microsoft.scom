@@ -1,0 +1,91 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: group_info
+  short_description: Retrieve information about SCOM groups.
+  description:
+    - Returns the list of SCOM groups.
+    - Optionally filters to a single group by internal full name or display name.
+    - This is a read-only module and never changes the SCOM environment.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - Restrict the result to the group with this internal full name.
+        - Ignored when O(display_name) is provided.
+        - When both O(name) and O(display_name) are omitted, all groups are returned.
+      type: str
+      required: false
+    display_name:
+      description:
+        - Restrict the result to the group with this display name.
+        - Takes precedence over O(name) when both are provided.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get all groups
+    microsoft.scom.group_info:
+    register: all_groups
+
+  - name: Get a single group by display name
+    microsoft.scom.group_info:
+      display_name: "Contoso Group"
+    register: contoso_group
+
+RETURN:
+  groups:
+    description: The list of groups. Empty when none match.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      name:
+        description: The full internal name of the group class.
+        type: str
+      display_name:
+        description: The display name of the group.
+        type: str
+      full_name:
+        description: The full internal name of the group class.
+        type: str
+      id:
+        description: The internal GUID of the group.
+        type: str
+      configured_members:
+        description: >
+          The monitoring object GUIDs stored in the management pack XML for
+          groups created by M(microsoft.scom.group). Available immediately
+          after group creation or membership update - does not require
+          GroupPopulator to have run. Empty for built-in or third-party groups.
+        type: list
+        elements: dict
+        contains:
+          id:
+            description: The monitoring object GUID as stored in the management pack.
+            type: str
+      members:
+        description: >
+          The monitoring objects currently related to the group at runtime,
+          as returned by SCOM's GroupPopulator discovery. This list may be
+          empty for recently created or updated groups until GroupPopulator
+          completes (typically 30-120 seconds after creation). Use
+          C(configured_members) for immediate consistency checks.
+        type: list
+        elements: dict
+        contains:
+          display_name:
+            description: The display name of the member monitoring object.
+            type: str
+          name:
+            description: The full internal class name of the member monitoring object.
+            type: str
+          id:
+            description: The internal GUID of the member monitoring object.
+            type: str

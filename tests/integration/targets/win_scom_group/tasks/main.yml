@@ -1,0 +1,280 @@
+---
+# Integration tests for microsoft.scom.group and group_info.
+#
+# One group is created with 3 explicit members, then membership is updated
+# (remove one member, add it back by GUID), and finally the group is removed.
+# The backing management pack is always cleaned up in the always block.
+
+- name: Integration test suite for group and group_info modules
+  block:
+    # =========================================================
+    # SETUP: pre-clean any leftover test group
+    # =========================================================
+    - name: Pre-clean any leftover test group
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        state: absent
+
+    # =========================================================
+    # PHASE 1: create group - check mode
+    # =========================================================
+    - name: Create group with 3 members in check mode
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+          - "{{ scom_test_memeber_3 }}"
+      check_mode: true
+      register: _create_check
+
+    - name: Confirm group does not exist after create check mode
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_after_create_check
+
+    - name: Assert create check mode reports changed
+      ansible.builtin.assert:
+        that:
+          - _create_check.changed == true
+          - _info_after_create_check.groups | length == 0
+        fail_msg: "Create check mode must not create the group"
+
+    # =========================================================
+    # PHASE 2: create group
+    # =========================================================
+    - name: Create group
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+          - "{{ scom_test_memeber_3 }}"
+      register: _create
+
+    - name: Confirm group exists after creation
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_after_create
+
+    - name: Assert group was created with 3 configured members
+      ansible.builtin.assert:
+        that:
+          - _create.changed == true
+          - _create.group.display_name == scom_test_group_display
+          - _create.group.management_pack == scom_test_group_name
+          - _create.group.configured_members | length == 3
+          - _info_after_create.groups | length == 1
+          - (_info_after_create.groups | first).display_name == scom_test_group_display
+          - (_info_after_create.groups | first).configured_members | length == 3
+        fail_msg: "Group was not created correctly with 3 members"
+
+    # =========================================================
+    # PHASE 3: create group - idempotency
+    # =========================================================
+    - name: Create the same group with the same 3 members (idempotency)
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+          - "{{ scom_test_memeber_3 }}"
+      register: _create_idem
+
+    - name: Assert no change on idempotent create
+      ansible.builtin.assert:
+        that:
+          - _create_idem.changed == false
+        fail_msg: "Group must be idempotent when members are unchanged"
+
+    # =========================================================
+    # PHASE 4: remove single member - check mode
+    # =========================================================
+    - name: Remove member 3 from the group in check mode
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+      check_mode: true
+      register: _remove_member_check
+
+    - name: Assert check mode reports changed for member removal
+      ansible.builtin.assert:
+        that:
+          - _remove_member_check.changed == true
+        fail_msg: "Member removal check mode must report changed=true"
+
+    - name: Confirm group still has 3 configured members after check mode
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_after_remove_member_check
+
+    - name: Assert group still has 3 configured members (check mode made no change)
+      ansible.builtin.assert:
+        that:
+          - (_info_after_remove_member_check.groups | first).configured_members | length == 3
+        fail_msg: "Member removal check mode must not change the group"
+
+    # =========================================================
+    # PHASE 5: remove single member
+    # =========================================================
+    - name: Remove member 3 from the group
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+      register: _remove_member
+
+    - name: Assert member was removed
+      ansible.builtin.assert:
+        that:
+          - _remove_member.changed == true
+          - _remove_member.group.configured_members | length == 2
+        fail_msg: "Member removal did not report the correct result"
+
+    - name: Retrieve the group via info module after member removal
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_after_remove_member
+
+    - name: Assert info module shows only 2 configured members after removal
+      ansible.builtin.assert:
+        that:
+          - _info_after_remove_member.groups | length == 1
+          - (_info_after_remove_member.groups | first).configured_members | length == 2
+        fail_msg: "group_info did not reflect the member removal correctly"
+
+    # =========================================================
+    # PHASE 6: remove single member - idempotency
+    # =========================================================
+    - name: Run same 2-member config again (idempotency)
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+      register: _remove_member_idem
+
+    - name: Assert no change on idempotent 2-member run
+      ansible.builtin.assert:
+        that:
+          - _remove_member_idem.changed == false
+        fail_msg: "Group must be idempotent when 2-member config is unchanged"
+
+    - name: Retrieve the group via info module on idempotent 2-member run
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_after_remove_member_idem
+
+    - name: Assert info module still shows 2 configured members after idempotent run
+      ansible.builtin.assert:
+        that:
+          - _info_after_remove_member_idem.groups | length == 1
+          - (_info_after_remove_member_idem.groups | first).configured_members | length == 2
+        fail_msg: "group_info should still show 2 configured members after idempotent run"
+
+    # =========================================================
+    # PHASE 7: add removed member back by GUID
+    # =========================================================
+    - name: Add member 3 back using its GUID ({{ scom_test_memeber_3_id }})
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        display_name: "{{ scom_test_group_display }}"
+        members:
+          - "{{ scom_test_memeber_1 }}"
+          - "{{ scom_test_memeber_2 }}"
+          - "{{ scom_test_memeber_3_id }}"
+      register: _add_member_by_id
+
+    - name: Assert member was re-added by GUID (3 configured members)
+      ansible.builtin.assert:
+        that:
+          - _add_member_by_id.changed == true
+          - _add_member_by_id.group.configured_members | length == 3
+        fail_msg: "Adding member by GUID did not work correctly"
+
+    # =========================================================
+    # PHASE 8: remove group - check mode
+    # =========================================================
+    - name: Remove the group in check mode
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        state: absent
+      check_mode: true
+      register: _remove_check
+
+    - name: Assert check mode reports changed for group removal
+      ansible.builtin.assert:
+        that:
+          - _remove_check.changed == true
+        fail_msg: "Group removal check mode must report changed=true"
+
+    - name: Confirm group still exists after removal check mode
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_after_remove_check
+
+    - name: Assert group still exists after removal check mode
+      ansible.builtin.assert:
+        that:
+          - _info_after_remove_check.groups | length == 1
+        fail_msg: "Group removal check mode must not remove the group"
+
+    # =========================================================
+    # PHASE 9: remove group
+    # =========================================================
+    - name: Remove the group
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        state: absent
+      register: _remove
+
+    - name: Assert group was removed
+      ansible.builtin.assert:
+        that:
+          - _remove.changed == true
+        fail_msg: "Group removal did not report changed=true"
+
+    # =========================================================
+    # PHASE 10: remove group - idempotency
+    # =========================================================
+    - name: Remove the group again (idempotency)
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        state: absent
+      register: _remove_idem
+
+    - name: Assert no change removing an already absent group
+      ansible.builtin.assert:
+        that:
+          - _remove_idem.changed == false
+        fail_msg: "Group absent must be idempotent"
+
+    - name: Confirm group no longer exists
+      microsoft.scom.group_info:
+        display_name: "{{ scom_test_group_display }}"
+      register: _info_final
+
+    - name: Assert group is gone
+      ansible.builtin.assert:
+        that:
+          - _info_final.groups | length == 0
+        fail_msg: "group_info still shows the group after removal"
+
+  always:
+    # =========================================================
+    # ALWAYS: cleanup
+    # =========================================================
+    - name: Cleanup - remove test group and its backing management pack
+      microsoft.scom.group:
+        name: "{{ scom_test_group_name }}"
+        state: absent
+      failed_when: false

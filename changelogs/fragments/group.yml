@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - group - new module to create and remove SCOM groups by authoring and importing a group-populator management pack.
+  - group_info - new module to retrieve SCOM groups, optionally filtered by internal full name or display name.

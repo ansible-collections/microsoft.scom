@@ -1,0 +1,155 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: group
+  short_description: Manage SCOM groups with explicit membership.
+  description:
+    - Creates or removes a SCOM instance group.
+    - Membership is explicit (static) - each member is specified by its name or GUID.
+    - Members can be any SCOM monitoring object type (Windows computers, IIS sites, application pools, health services, etc.).
+    - An empty group is created when O(members) is omitted or empty.
+    - Idempotent by O(name) and O(members) - if the group already exists with the same
+      membership the task reports C(changed=false). If the membership differs, the module
+      updates the group discovery.
+    - Supports check mode.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - The internal name of the group, used as the identity of the backing management pack.
+        - Must be a valid SCOM management pack identifier - it must start with a letter or
+          underscore and contain only letters, digits, underscores, and dots (no spaces).
+      type: str
+      required: true
+    display_name:
+      description:
+        - The display name shown for the group in the Operations Console.
+        - Defaults to O(name) when not provided.
+      type: str
+      required: false
+    members:
+      description:
+        - The monitoring objects to include in the group as explicit (static) members.
+        - Each entry is either a monitoring object GUID or a display name.
+        - Members can be any SCOM monitoring object type - Windows computers, IIS sites,
+          application pools, health services, etc.
+        - Display names are resolved against all SCOM monitoring objects at run time.
+        - The task fails when a display name matches zero objects with msg "Member does not exist in SCOM."
+        - The task uses the first object when a display name matches more than one object with msg
+          "Supply the GUID directly if you need a specific class instance."
+        - When omitted or empty, an empty group is created - no members are added.
+        - Members are idempotent - if the group already exists with the same membership,
+          the task reports C(changed=false). If the membership differs, the module
+          updates the group discovery.
+      type: list
+      elements: str
+      required: false
+      default: []
+    state:
+      description:
+        - C(present) ensures the group exists, creating it if necessary.
+        - C(absent) removes the group if it exists.
+      type: str
+      required: false
+      default: present
+      choices:
+        - present
+        - absent
+
+EXAMPLES: |
+  - name: Create an empty group
+    microsoft.scom.group:
+      name: "Contoso.WebServers"
+      display_name: "Contoso Web Servers"
+
+  - name: Create a group using display names (resolved automatically)
+    microsoft.scom.group:
+      name: "Contoso.Group"
+      display_name: "Contoso Group"
+      members:
+          - "Action"
+          - "WIN-Q37ISGBPHBE.eco.ansible.com"
+          - ".NET v2.0 Classic"
+
+  - name: Create a group using GUIDs (use when display name is ambiguous)
+    microsoft.scom.group:
+      name: "Contoso.Group"
+      display_name: "Contoso Group"
+      members:
+        - "50bda82b-51fa-6768-9045-15ca5fddc15d"
+        - "08fa2fb9-8983-3849-764a-084aa391eaaf"
+        - "dbfc4ab7-9673-ec12-670c-3418c382de50"
+
+  - name: Get member IDs from an existing group and reuse them
+    microsoft.scom.group_info:
+      display_name: "IIS Web Server"
+    register: iis_group
+
+  - name: Create a group whose members come from a previous lookup
+    microsoft.scom.group:
+      name: "Contoso.IISServers"
+      display_name: "Contoso IIS Servers"
+      members: "{{ iis_group.groups | map(attribute='id') | list }}"
+
+  - name: Remove a group
+    microsoft.scom.group:
+      name: "Contoso.WebServers"
+      state: absent
+
+RETURN:
+  group:
+    description: The SCOM group after applying changes. Not returned when C(state=absent).
+    returned: when C(state=present)
+    type: dict
+    contains:
+      name:
+        description: The full internal name of the group class.
+        type: str
+      display_name:
+        description: The display name of the group.
+        type: str
+      full_name:
+        description: The full internal name of the group class.
+        type: str
+      id:
+        description: The internal GUID of the group.
+        type: str
+      management_pack:
+        description: The management pack that defines the group.
+        type: str
+      configured_members:
+        description: >
+          The monitoring object GUIDs stored in the management pack XML.
+          Available immediately after import or in-place update - does not
+          require GroupPopulator to have run. Use this field to verify
+          the intended membership without waiting for the discovery cycle.
+        type: list
+        elements: dict
+        contains:
+          id:
+            description: The monitoring object GUID as stored in the management pack.
+            type: str
+      members:
+        description: >
+          The monitoring objects currently related to the group at runtime,
+          as returned by SCOM's GroupPopulator discovery. May be empty
+          immediately after creation or update; use C(configured_members)
+          for immediate consistency checks.
+        type: list
+        elements: dict
+        contains:
+          display_name:
+            description: The display name of the member monitoring object.
+            type: str
+          name:
+            description: The full internal class name of the member monitoring object.
+            type: str
+          id:
+            description: The internal GUID of the member monitoring object.
+            type: str

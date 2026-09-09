@@ -1,0 +1,7 @@
+---
+scom_test_group_name: "Ansible.Integration.Test.Group"
+scom_test_group_display: "Ansible Integration Test Group"
+scom_test_memeber_1: "Action"
+scom_test_memeber_2: ".NET v2.0 Classic"
+scom_test_memeber_3: "WIN-Q36ISGBPHBD.eco.ansible.com"
+scom_test_memeber_3_id: "08fa2fb9-8983-3849-764a-084aa391eaaf"
