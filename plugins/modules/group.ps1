@@ -21,7 +21,10 @@ Function Get-MPConfiguredMemberId {
 
     $result = @()
     try {
-        $all_discoveries = @(Get-SCOMDiscovery -ManagementPack $mp -ErrorAction SilentlyContinue)
+        # Use $mp.GetDiscoveries() (direct SDK method on the ManagementPack object) rather
+        # than Get-SCOMDiscovery -ManagementPack, which does not surface discoveries from
+        # SDK-imported management packs reliably.
+        $all_discoveries = @($mp.GetDiscoveries())
         $discovery = $all_discoveries |
             Where-Object { $_.Name -eq "$name.Group.DiscoveryRule" } |
             Select-Object -First 1
@@ -40,7 +43,6 @@ Function Get-MPConfiguredMemberId {
 }
 
 
-
 Function Update-GroupDiscovery {
     <#
     Modifies the group discovery's DataSource.Configuration XML in-place to reflect
@@ -57,7 +59,7 @@ Function Update-GroupDiscovery {
 
     $discovery = $null
     try {
-        $all_discoveries = @(Get-SCOMDiscovery -ManagementPack $mp -ErrorAction SilentlyContinue)
+        $all_discoveries = @($mp.GetDiscoveries())
         $discovery = $all_discoveries |
             Where-Object { $_.Name -eq "$name.Group.DiscoveryRule" } |
             Select-Object -First 1
@@ -66,7 +68,10 @@ Function Update-GroupDiscovery {
         $module.FailJson("Could not retrieve discovery rules for group '$name': $($_.Exception.Message)", $_)
     }
     if ($null -eq $discovery) {
-        $module.FailJson("Discovery rule '$name.Group.DiscoveryRule' was not found in management pack '$name'.")
+        $module.FailJson(
+            "Discovery rule '$name.Group.DiscoveryRule' was not found in management pack '$name'. " +
+            "Available discoveries: $((@($mp.GetDiscoveries()) | ForEach-Object { $_.Name }) -join ', ')"
+        )
     }
 
     [xml]$config_xml = "<root>$($discovery.DataSource.Configuration)</root>"
@@ -185,108 +190,234 @@ Function Format-GroupResult {
 }
 
 
-Function New-GroupManagementPackXml {
+Function New-GroupManagementPack {
     <#
-    Builds the management pack XML that defines a SCOM instance group with explicit
-    (static) membership. Each member is identified by its monitoring object GUID.
-    Members can be any SCOM monitoring object type (computers, IIS sites, health
-    services, etc.). An empty members list creates an empty group.
+    Creates a SCOM instance group management pack
+    The full management pack XML is constructed via XmlDocument DOM.
     #>
     param (
-        [Parameter(Mandatory = $true)][string]$identity,
+        [Parameter(Mandatory = $true)][object]$module,
+        [Parameter(Mandatory = $true)][string]$name,
         [Parameter(Mandatory = $true)][string]$display_name,
-        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$members
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$member_ids
     )
 
-    $class_id = "$identity.Group"
-    $escaped_display = [System.Security.SecurityElement]::Escape($display_name)
-    $entity_class = '$MPElement[Name="System!System.Entity"]$'
-    $relationship_class = '$MPElement[Name="MSIL!Microsoft.SystemCenter.InstanceGroupContainsEntities"]$'
-    $rule_id = '$MPElement$'
-    $group_instance_id = "`$MPElement[Name=`"$class_id`"]`$"
+    $all_installed = @(Get-SCOMManagementPack -ErrorAction SilentlyContinue)
+    $system_lib = $all_installed |
+        Where-Object { $_.Name -eq "System.Library" } |
+        Select-Object -First 1
+    $sc_lib = $all_installed |
+        Where-Object { $_.Name -eq "Microsoft.SystemCenter.Library" } |
+        Select-Object -First 1
+    $msil_lib = $all_installed |
+        Where-Object { $_.Name -eq "Microsoft.SystemCenter.InstanceGroup.Library" } |
+        Select-Object -First 1
 
-    if ($members.Count -eq 0) {
-        $membership_rules_block = "          <MembershipRules />"
-    }
-    else {
-        $include_id_lines = $members | ForEach-Object {
-            "                <MonitoringObjectId>$_</MonitoringObjectId>"
+    $lib_checks = @(
+        @{ Name = "System.Library"; Mp = $system_lib },
+        @{ Name = "Microsoft.SystemCenter.Library"; Mp = $sc_lib },
+        @{ Name = "Microsoft.SystemCenter.InstanceGroup.Library"; Mp = $msil_lib }
+    )
+    foreach ($check in $lib_checks) {
+        if ($null -eq $check.Mp) {
+            $module.FailJson(
+                "Required SCOM library '$($check.Name)' is not installed in this management group. " +
+                "Ensure all required base management packs are present before creating groups."
+            )
         }
-        $include_ids = $include_id_lines -join "`n"
-        $membership_rules_block = @"
-          <MembershipRules>
-            <MembershipRule>
-              <MonitoringClass>$entity_class</MonitoringClass>
-              <RelationshipClass>$relationship_class</RelationshipClass>
-              <IncludeList>
-$include_ids
-              </IncludeList>
-            </MembershipRule>
-          </MembershipRules>
-"@
     }
 
-    return @"
-<ManagementPack ContentReadable="true" SchemaVersion="2.0" OriginalSchemaVersion="1.1"
-                xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <Manifest>
-    <Identity>
-      <ID>$identity</ID>
-      <Version>1.0.0.0</Version>
-    </Identity>
-    <Name>$escaped_display</Name>
-    <References>
-      <Reference Alias="System">
-        <ID>System.Library</ID>
-        <Version>7.5.8501.1</Version>
-        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
-      </Reference>
-      <Reference Alias="SC">
-        <ID>Microsoft.SystemCenter.Library</ID>
-        <Version>10.22.10118.0</Version>
-        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
-      </Reference>
-      <Reference Alias="MSIL">
-        <ID>Microsoft.SystemCenter.InstanceGroup.Library</ID>
-        <Version>7.5.8501.1</Version>
-        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
-      </Reference>
-    </References>
-  </Manifest>
-  <TypeDefinitions>
-    <EntityTypes>
-      <ClassTypes>
-        <ClassType ID="$class_id" Accessibility="Public" Abstract="false"
-                   Base="MSIL!Microsoft.SystemCenter.InstanceGroup"
-                   Hosted="false" Singleton="true" Extension="false" />
-      </ClassTypes>
-    </EntityTypes>
-  </TypeDefinitions>
-  <Monitoring>
-    <Discoveries>
-      <Discovery ID="$class_id.DiscoveryRule" Enabled="true" Target="$class_id" ConfirmDelivery="false" Remotable="true" Priority="Normal">
-        <Category>Discovery</Category>
-        <DiscoveryTypes>
-          <DiscoveryRelationship TypeID="MSIL!Microsoft.SystemCenter.InstanceGroupContainsEntities" />
-        </DiscoveryTypes>
-        <DataSource ID="GroupPopulationDataSource" TypeID="SC!Microsoft.SystemCenter.GroupPopulator">
-          <RuleId>$rule_id</RuleId>
-          <GroupInstanceId>$group_instance_id</GroupInstanceId>
-$membership_rules_block
-        </DataSource>
-      </Discovery>
-    </Discoveries>
-  </Monitoring>
-  <LanguagePacks>
-    <LanguagePack ID="ENU" IsDefault="true">
-      <DisplayStrings>
-        <DisplayString ElementID="$class_id"><Name>$escaped_display</Name></DisplayString>
-      </DisplayStrings>
-    </LanguagePack>
-  </LanguagePacks>
-</ManagementPack>
-"@
+    $class_id = "$name.Group"
+
+    $schema_version = "2.0"
+    $orig_schema_version = "1.1"
+    $unsealed_mp = $all_installed | Where-Object { -not $_.Sealed } | Select-Object -First 1
+    if ($null -ne $unsealed_mp) {
+        try {
+            [xml]$ref_xml = $unsealed_mp.GetManagementPackXml()
+            if ($null -ne $ref_xml.ManagementPack.SchemaVersion) {
+                $schema_version = $ref_xml.ManagementPack.SchemaVersion
+            }
+            if ($null -ne $ref_xml.ManagementPack.OriginalSchemaVersion) {
+                $orig_schema_version = $ref_xml.ManagementPack.OriginalSchemaVersion
+            }
+        }
+        catch {
+            Write-Verbose "Could not read schema version from existing MP '$($unsealed_mp.Name)': $($_.Exception.Message). Using defaults."
+        }
+    }
+
+    [System.Xml.XmlDocument]$doc = [System.Xml.XmlDocument]::new()
+
+    $root = $doc.CreateElement("ManagementPack")
+    $root.SetAttribute("ContentReadable", "true")
+    $root.SetAttribute("SchemaVersion", $schema_version)
+    $root.SetAttribute("OriginalSchemaVersion", $orig_schema_version)
+    $root.SetAttribute("xmlns:xsd", "http://www.w3.org/2001/XMLSchema")
+    $root.SetAttribute("xmlns:xsl", "http://www.w3.org/1999/XSL/Transform")
+    [void]$doc.AppendChild($root)
+
+    # <Manifest>
+    $manifest = $doc.CreateElement("Manifest")
+    [void]$root.AppendChild($manifest)
+
+    $identity_el = $doc.CreateElement("Identity")
+    [void]$manifest.AppendChild($identity_el)
+    $id_el = $doc.CreateElement("ID")
+    $id_el.InnerText = $name
+    [void]$identity_el.AppendChild($id_el)
+    $ver_el = $doc.CreateElement("Version")
+    $ver_el.InnerText = "1.0.0.0"
+    [void]$identity_el.AppendChild($ver_el)
+
+    $mp_name_el = $doc.CreateElement("Name")
+    $mp_name_el.InnerText = $display_name
+    [void]$manifest.AppendChild($mp_name_el)
+
+    $references_el = $doc.CreateElement("References")
+    [void]$manifest.AppendChild($references_el)
+
+    $ref_items = @(
+        @{ Alias = "System"; Mp = $system_lib },
+        @{ Alias = "SC"; Mp = $sc_lib },
+        @{ Alias = "MSIL"; Mp = $msil_lib }
+    )
+    foreach ($ref_info in $ref_items) {
+        $ref_el = $doc.CreateElement("Reference")
+        $ref_el.SetAttribute("Alias", $ref_info.Alias)
+        $ref_id_el = $doc.CreateElement("ID")
+        $ref_id_el.InnerText = $ref_info.Mp.Name
+        [void]$ref_el.AppendChild($ref_id_el)
+        $ref_ver_el = $doc.CreateElement("Version")
+        $ref_ver_el.InnerText = $ref_info.Mp.Version.ToString()
+        [void]$ref_el.AppendChild($ref_ver_el)
+        $ref_token_el = $doc.CreateElement("PublicKeyToken")
+        $ref_token_el.InnerText = if ($null -ne $ref_info.Mp.KeyToken -and $ref_info.Mp.KeyToken -ne "") {
+            $ref_info.Mp.KeyToken
+        }
+        else { "null" }
+        [void]$ref_el.AppendChild($ref_token_el)
+        [void]$references_el.AppendChild($ref_el)
+    }
+
+    # <TypeDefinitions>
+    $typedef_el = $doc.CreateElement("TypeDefinitions")
+    [void]$root.AppendChild($typedef_el)
+    $entity_types_el = $doc.CreateElement("EntityTypes")
+    [void]$typedef_el.AppendChild($entity_types_el)
+    $class_types_el = $doc.CreateElement("ClassTypes")
+    [void]$entity_types_el.AppendChild($class_types_el)
+
+    $class_type_el = $doc.CreateElement("ClassType")
+    $class_type_el.SetAttribute("ID", $class_id)
+    $class_type_el.SetAttribute("Accessibility", "Public")
+    $class_type_el.SetAttribute("Abstract", "false")
+    $class_type_el.SetAttribute("Base", "MSIL!Microsoft.SystemCenter.InstanceGroup")
+    $class_type_el.SetAttribute("Hosted", "false")
+    $class_type_el.SetAttribute("Singleton", "true")
+    $class_type_el.SetAttribute("Extension", "false")
+    [void]$class_types_el.AppendChild($class_type_el)
+
+    # <Monitoring>
+    $monitoring_el = $doc.CreateElement("Monitoring")
+    [void]$root.AppendChild($monitoring_el)
+    $discoveries_el = $doc.CreateElement("Discoveries")
+    [void]$monitoring_el.AppendChild($discoveries_el)
+
+    $discovery_el = $doc.CreateElement("Discovery")
+    $discovery_el.SetAttribute("ID", "$class_id.DiscoveryRule")
+    $discovery_el.SetAttribute("Enabled", "true")
+    $discovery_el.SetAttribute("Target", $class_id)
+    $discovery_el.SetAttribute("ConfirmDelivery", "false")
+    $discovery_el.SetAttribute("Remotable", "true")
+    $discovery_el.SetAttribute("Priority", "Normal")
+    [void]$discoveries_el.AppendChild($discovery_el)
+
+    $category_el = $doc.CreateElement("Category")
+    $category_el.InnerText = "Discovery"
+    [void]$discovery_el.AppendChild($category_el)
+
+    $disc_types_el = $doc.CreateElement("DiscoveryTypes")
+    [void]$discovery_el.AppendChild($disc_types_el)
+    $disc_rel_el = $doc.CreateElement("DiscoveryRelationship")
+    $disc_rel_el.SetAttribute("TypeID", "MSIL!Microsoft.SystemCenter.InstanceGroupContainsEntities")
+    [void]$disc_types_el.AppendChild($disc_rel_el)
+
+    $datasource_el = $doc.CreateElement("DataSource")
+    $datasource_el.SetAttribute("ID", "GroupPopulationDataSource")
+    $datasource_el.SetAttribute("TypeID", "SC!Microsoft.SystemCenter.GroupPopulator")
+    [void]$discovery_el.AppendChild($datasource_el)
+
+    $rule_id_node = $doc.CreateElement("RuleId")
+    $rule_id_node.InnerText = '$MPElement$'
+    [void]$datasource_el.AppendChild($rule_id_node)
+
+    $group_instance_id_node = $doc.CreateElement("GroupInstanceId")
+    $group_instance_id_node.InnerText = '$MPElement[Name="' + $class_id + '"]$'
+    [void]$datasource_el.AppendChild($group_instance_id_node)
+
+    $membership_rules_node = $doc.CreateElement("MembershipRules")
+    if ($member_ids.Count -gt 0) {
+        $rule_node = $doc.CreateElement("MembershipRule")
+
+        $class_node = $doc.CreateElement("MonitoringClass")
+        $class_node.InnerText = '$MPElement[Name="System!System.Entity"]$'
+        [void]$rule_node.AppendChild($class_node)
+
+        $rel_node = $doc.CreateElement("RelationshipClass")
+        $rel_node.InnerText = '$MPElement[Name="MSIL!Microsoft.SystemCenter.InstanceGroupContainsEntities"]$'
+        [void]$rule_node.AppendChild($rel_node)
+
+        $include_node = $doc.CreateElement("IncludeList")
+        foreach ($id in $member_ids) {
+            $id_node = $doc.CreateElement("MonitoringObjectId")
+            $id_node.InnerText = $id
+            [void]$include_node.AppendChild($id_node)
+        }
+        [void]$rule_node.AppendChild($include_node)
+        [void]$membership_rules_node.AppendChild($rule_node)
+    }
+    [void]$datasource_el.AppendChild($membership_rules_node)
+
+    # <LanguagePacks>
+    $lang_packs_el = $doc.CreateElement("LanguagePacks")
+    [void]$root.AppendChild($lang_packs_el)
+    $lang_pack_el = $doc.CreateElement("LanguagePack")
+    $lang_pack_el.SetAttribute("ID", "ENU")
+    $lang_pack_el.SetAttribute("IsDefault", "true")
+    [void]$lang_packs_el.AppendChild($lang_pack_el)
+    $display_strings_el = $doc.CreateElement("DisplayStrings")
+    [void]$lang_pack_el.AppendChild($display_strings_el)
+    $display_string_el = $doc.CreateElement("DisplayString")
+    $display_string_el.SetAttribute("ElementID", $class_id)
+    [void]$display_strings_el.AppendChild($display_string_el)
+    $ds_name_el = $doc.CreateElement("Name")
+    $ds_name_el.InnerText = $display_name
+    [void]$display_string_el.AppendChild($ds_name_el)
+
+    $xml_path = [System.IO.Path]::Combine($env:TEMP, "$name.xml")
+
+    try {
+        $doc.Save($xml_path)
+    }
+    catch {
+        $module.FailJson("Failed to write management pack file '$xml_path': $($_.Exception.Message)", $_)
+    }
+
+    try {
+        Import-SCOMManagementPack -FullName $xml_path -ErrorAction Stop *> $null
+    }
+    catch {
+        $inner = if ($null -ne $_.Exception.InnerException) {
+            " Inner: $($_.Exception.InnerException.Message)"
+        }
+        else { "" }
+        $module.FailJson(
+            "Failed to import the group management pack '$name': $($_.Exception.Message)$inner", $_)
+    }
+    finally {
+        Remove-Item -LiteralPath $xml_path -Force -ErrorAction SilentlyContinue
+    }
 }
 
 
@@ -416,6 +547,29 @@ $member_ids = Resolve-SCOMMemberId -module $module -members $members
 
 # state == present
 if ($null -ne $existing_mp) {
+    $existing_discoveries = @($existing_mp.GetDiscoveries() | ForEach-Object { $_.Name })
+    if ($existing_discoveries -notcontains "$name.Group.DiscoveryRule") {
+        $module.Warn(
+            "Management pack '$name' exists but is missing the expected discovery rule " +
+            "'$name.Group.DiscoveryRule' (found: '$($existing_discoveries -join "', '")'). " +
+            "The pack will be removed and recreated to restore a consistent state."
+        )
+        $module.Result.changed = $true
+        if (-not $module.CheckMode) {
+            try {
+                $null = $existing_mp | Remove-SCOMManagementPack -ErrorAction Stop
+            }
+            catch {
+                $module.FailJson(
+                    "Management pack '$name' is structurally incomplete (missing discovery rule) " +
+                    "and could not be removed for recreation: $($_.Exception.Message)", $_)
+            }
+        }
+        $existing_mp = $null
+    }
+}
+
+if ($null -ne $existing_mp) {
     $configured_ids = Get-MPConfiguredMemberId -mp $existing_mp -name $name
 
     $requested_norm = @($member_ids | ForEach-Object { $_.ToLower() } | Sort-Object -Unique)
@@ -459,30 +613,13 @@ if ($null -ne $existing_mp) {
 $module.Result.changed = $true
 
 if (-not $module.CheckMode) {
-    $xml_path = Join-Path -Path $env:TEMP -ChildPath "$name.xml"
-    $xml = New-GroupManagementPackXml -identity $name -display_name $display_name -members $member_ids
+    New-GroupManagementPack `
+        -module       $module `
+        -name         $name `
+        -display_name $display_name `
+        -member_ids   $member_ids
 
-    try {
-        Set-Content -LiteralPath $xml_path -Value $xml -Encoding UTF8 -ErrorAction Stop
-    }
-    catch {
-        $module.FailJson("Failed to write the group management pack file '$xml_path': $($_.Exception.Message)", $_)
-    }
-
-    try {
-        Import-SCOMManagementPack -FullName $xml_path -ErrorAction Stop *> $null
-    }
-    catch {
-        $inner = if ($null -ne $_.Exception.InnerException) { " Inner: $($_.Exception.InnerException.Message)" } else { "" }
-        $module.FailJson("Failed to import the group management pack '$name': $($_.Exception.Message)$inner", $_)
-    }
-    finally {
-        Remove-Item -LiteralPath $xml_path -Force -ErrorAction SilentlyContinue
-    }
-
-    if ($null -ne $mg) {
-        Invoke-GroupPopulatorRefresh -mg $mg -name $name
-    }
+    Invoke-GroupPopulatorRefresh -mg $mg -name $name
 
     $group = @(Get-SCOMGroup -DisplayName $display_name -ErrorAction SilentlyContinue) | Select-Object -First 1
     if ($null -ne $group) {
