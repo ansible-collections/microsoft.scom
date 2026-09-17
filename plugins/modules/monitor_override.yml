@@ -1,0 +1,162 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: monitor_override
+  short_description: Manage SCOM monitor overrides.
+  description:
+    - This module can B(enable or disable a SCOM monitor) for a specific class or group.
+    - Changes the value of an override that is already applied to a SCOM monitor.
+    - The override must exist before this module is called. Use M(microsoft.scom.monitor_override_info)
+      to discover which overrides are in effect and their current values.
+    - C(Enabled) — the only property that can create an override when one does not yet exist.
+    - C(management_pack) is B(not idempotent) for existing C(Enabled) overrides and does not
+      affect where the override is stored.
+    - Alert system properties — C(GenerateAlert), C(AutoResolve), C(AlertPriority),
+      C(AlertSeverity), C(AlertOnState). The override B(must already exist). Modifies the
+      existing override object in-place.
+    - Monitor configuration parameters — custom parameters exposed by the monitor type such as
+      C(Threshold), C(IntervalSeconds), C(Timeout). The override B(must already exist).
+      Modifies the existing override object in-place.
+    - Supports check mode.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    monitor_id:
+      description:
+        - The unique GUID of the monitor to act on.
+        - Use M(microsoft.scom.monitor_override_info) to find the monitor GUID.
+      type: str
+      required: true
+    override_property:
+      description:
+        - The name of the monitor property whose override value should be changed.
+        - Must be one of the system properties listed below, or a custom configuration
+          parameter exposed by the monitor.
+        - "System (Enabled): C(Enabled)"
+        - "System (Alert): C(GenerateAlert), C(AutoResolve), C(AlertPriority),
+          C(AlertSeverity), C(AlertOnState)"
+        - "Custom: any parameter name of the target monitor, e.g. C(Threshold), C(Timeout), C(IntervalSeconds)."
+      type: str
+      required: true
+    override_value:
+      description:
+        - The new value to set for the override.
+        - For boolean properties (C(Enabled), C(AutoResolve), C(GenerateAlert)) use C(true) or C(false).
+        - "For C(AlertPriority): C(low), C(normal), C(high)."
+        - "For C(AlertSeverity): C(information), C(warning), C(error), C(match_monitor_health)."
+        - "For C(AlertOnState): C(error), C(warning)."
+        - For custom configuration parameters provide the raw value as a string (e.g. C(300) for a timeout).
+      type: str
+      required: true
+    target:
+      description:
+        - Whether the override is scoped to a C(class) or a C(group).
+      type: str
+      required: true
+      choices:
+        - class
+        - group
+    target_name:
+      description:
+        - The display name of the class or group the override is scoped to.
+      type: str
+      required: true
+    management_pack:
+      description:
+        - The internal name or display name of the unsealed management pack that will store
+          a B(new) C(Enabled) override.
+        - Only applies when creating a new override.
+        - Not idempotent when C(Enabled) already exists.
+        - Not required for other properties.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Disable monitor for the Gateway class
+    microsoft.scom.monitor_override:
+      monitor_id: "1acfe2b7-72ac-8975-8452-b343a8b581ed"
+      override_property: Enabled
+      override_value: "false"
+      target: class
+      target_name: "Gateway"
+      management_pack: "AnsibleAlert"
+
+  - name: Re-enable monitor for the AD Assignment Resource Pool group
+    microsoft.scom.monitor_override:
+      monitor_id: "1acfe2b7-72ac-8975-8452-b343a8b581ed"
+      override_property: Enabled
+      override_value: "true"
+      target: group
+      target_name: "AD Assignment Resource Pool"
+      management_pack: "AnsibleAlert"
+
+  - name: Change alert priority to High for a class-wide override
+    microsoft.scom.monitor_override:
+      monitor_id: "e389b054-48c8-f526-9572-1dba95ca753e"
+      override_property: AlertPriority
+      override_value: high
+      target: class
+      target_name: "CPU Processor (Bytemobile)"
+
+  - name: Change alert priority to High for a group-scoped override
+    microsoft.scom.monitor_override:
+      monitor_id: "1acfe2b7-72ac-8975-8452-b343a8b581ed"
+      override_property: AlertPriority
+      override_value: high
+      target: group
+      target_name: "AD Assignment Resource Pool"
+
+  - name: Update Threshold custom parameter for a class-wide override
+    microsoft.scom.monitor_override:
+      monitor_id: "e389b054-48c8-f526-9572-1dba95ca753e"
+      override_property: Threshold
+      override_value: "95"
+      target: class
+      target_name: "CPU Processor (Bytemobile)"
+
+  - name: Update Threshold custom parameter for a group-scoped override
+    microsoft.scom.monitor_override:
+      monitor_id: "1acfe2b7-72ac-8975-8452-b343a8b581ed"
+      override_property: Threshold
+      override_value: "95"
+      target: group
+      target_name: "AD Assignment Resource Pool"
+
+RETURN:
+  current_value:
+    description: >-
+      The value of the override B(before) the change. Only present when the module
+      runs in check mode and a change would be made.
+    returned: when check_mode is true and changed is true
+    type: str
+  override:
+    description: The state of the override after the module ran.
+    returned: always
+    type: dict
+    contains:
+      monitor_id:
+        description: The GUID of the monitor.
+        type: str
+      monitor_display_name:
+        description: The display name of the monitor.
+        type: str
+      override_property:
+        description: The property that was overridden.
+        type: str
+      override_value:
+        description: The new value of the override after the module ran.
+        type: str
+      target:
+        description: The scope type — C(class) or C(group).
+        type: str
+      target_name:
+        description: The display name of the class or group the override is scoped to.
+        type: str
+      management_pack:
+        description: The display name of the management pack that stores the override.
+        type: str

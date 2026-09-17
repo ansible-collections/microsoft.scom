@@ -1,0 +1,21 @@
+---
+monitor_id: "e389b054-48c8-f526-9572-1dba95ca753e"
+
+alert_priority_property: "AlertPriority"
+alert_priority_target: "class"
+alert_priority_target_name: "CPU Processor (Bytemobile)"
+alert_priority_original_value: "High"
+alert_priority_new_value: "Low"
+
+enabled_property: "Enabled"
+enabled_target: "class"
+enabled_target_name: "Gateway"
+enabled_management_pack: "Ansible.Alert"
+enabled_original_value: "true"
+enabled_new_value: "false"
+
+threshold_property: "Threshold"
+threshold_target: "group"
+threshold_target_name: "AD Assignment Resource Pool"
+threshold_original_value: "11"
+threshold_new_value: "21"
