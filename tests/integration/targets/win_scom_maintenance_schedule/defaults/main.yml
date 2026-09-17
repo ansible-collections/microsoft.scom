@@ -1,0 +1,13 @@
+---
+# Unique, clearly-identifiable name so the throwaway test schedule never collides
+# with a real maintenance schedule in the SCOM environment.
+scom_test_schedule_name: "Ansible Integration Test Maintenance Schedule"
+# active_start_time is set far in the future so the schedule never actually places
+# the targeted group into maintenance mode during the test run.
+scom_test_schedule_start_time: "2035-01-01 02:00:00"
+scom_test_schedule_duration: 30
+scom_test_schedule_duration_updated: 60
+scom_test_schedule_reason: planned_other
+scom_test_schedule_reason_updated: unplanned_operating_system_reconfiguration
+scom_test_schedule_enabled: true
+scom_test_schedule_enabled_updated: false

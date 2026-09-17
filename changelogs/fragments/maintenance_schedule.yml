@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - maintenance_schedule - new module to create, update, and remove SCOM maintenance schedules.
+  - maintenance_schedule_info - new module to retrieve information about SCOM maintenance schedules.

@@ -1,0 +1,78 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: maintenance_schedule_info
+  short_description: Retrieve information about SCOM maintenance schedules.
+  description:
+    - Returns the list of SCOM maintenance schedules.
+    - Optionally filters schedules by name.
+    - This module only reads state and never makes changes.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - Restrict the results to the maintenance schedule with this internal name.
+        - When omitted, all maintenance schedules are returned.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get all maintenance schedules
+    microsoft.scom.maintenance_schedule_info:
+    register: all_schedules
+
+  - name: Get a single maintenance schedule by name
+    microsoft.scom.maintenance_schedule_info:
+      name: "Patch Window - Web Servers"
+    register: patch_schedule
+
+RETURN:
+  schedules:
+    description: The list of matching SCOM maintenance schedules. Empty when none match.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      schedule_id:
+        description: GUID of the maintenance schedule.
+        type: str
+      name:
+        description: Name of the maintenance schedule.
+        type: str
+      enabled:
+        description: Whether the schedule is enabled.
+        type: bool
+      recursive:
+        description: Whether contained objects are also placed into maintenance mode.
+        type: bool
+      duration:
+        description: Duration of each maintenance window, in minutes.
+        type: int
+      reason:
+        description: The maintenance mode reason.
+        type: str
+      comments:
+        description: Comments stored with the schedule.
+        type: str
+      active_start_time:
+        description: The schedule's active start time (yyyy-MM-dd HH:mm:ss z).
+        type: str
+      active_end_date:
+        description: The schedule's active end date (yyyy-MM-dd HH:mm:ss z).
+        type: str
+      is_recurrence:
+        description: Whether the schedule recurs.
+        type: bool
+      frequency:
+        description: The recurrence frequency (once, daily, weekly, monthly).
+        type: str
+      monitoring_objects:
+        description: The list of monitoring object GUIDs targeted by the schedule.
+        type: list
+        elements: str
