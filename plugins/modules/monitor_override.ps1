@@ -6,6 +6,16 @@
 #AnsibleRequires -CSharpUtil Ansible.Basic
 #AnsibleRequires -PowerShell ..module_utils._SCOMPsSetupUtils
 
+# Valid Ansible-side values for each system override property (lowercase).
+$SYSTEM_PROPERTY_CHOICES = @{
+    AlertPriority = @("low", "normal", "high")
+    AlertSeverity = @("information", "warning", "error", "match_monitor_health")
+    AlertOnState = @("error", "warning")
+    AutoResolve = @("true", "false")
+    GenerateAlert = @("true", "false")
+    Enabled = @("true", "false")
+}
+
 
 Function Get-OverridePropertyName {
     <#
@@ -70,19 +80,38 @@ Function ConvertTo-SdkValue {
 }
 
 
-Function Assert-CustomParameterValue {
+Function Assert-OverrideValue {
     <#
-    Validates override_value against the ParameterType string returned by
-    $monitor.GetOverrideableParameters() (e.g. "int", "bool", "string").
-    Calls $module.FailJson() immediately if the value cannot be converted.
+    Validates override_value for both system and custom monitor properties.
+
+    Two modes — supply exactly one of:
+      -choices   : allowed string values (case-insensitive). Used for system properties
+                   whose valid values are a fixed set (e.g. AlertPriority, Enabled).
+      -type_str  : ParameterType string from $monitor.GetOverrideableParameters()
+                   (e.g. "int", "bool"). Used for custom monitor parameters.
+
+    Calls $module.FailJson() immediately when validation fails.
     #>
     param (
-        [Parameter(Mandatory = $true)][string]$type_str,
         [Parameter(Mandatory = $true)][string]$property_name,
         [Parameter(Mandatory = $true)][string]$value,
-        [Parameter(Mandatory = $true)][object]$module
+        [Parameter(Mandatory = $true)][object]$module,
+        [string[]]$choices = @(),
+        [string]$type_str = ""
     )
 
+    # Choices mode — fixed set of allowed values (system properties).
+    if ($choices.Count -gt 0) {
+        if ($value.Trim().ToLower() -notin $choices) {
+            $module.FailJson(
+                "Invalid value '$value' for '$property_name'. " +
+                "Valid values: $($choices -join ', ')"
+            )
+        }
+        return
+    }
+
+    # Type mode — validate against the ParameterType of a custom monitor parameter.
     if ([string]::IsNullOrWhiteSpace($type_str)) { return }
 
     switch ($type_str.ToLower()) {
@@ -204,39 +233,9 @@ if ($override_property -notin $valid_properties) {
 
 $normalized_value = $override_value.Trim().ToLower()
 
-switch ($override_property) {
-    "AlertPriority" {
-        if ($normalized_value -notin @("low", "normal", "high")) {
-            $module.FailJson(
-                "Invalid value '$override_value' for 'AlertPriority'. " +
-                "Valid values: low, normal, high"
-            )
-        }
-    }
-    "AlertSeverity" {
-        if ($normalized_value -notin @("information", "warning", "error", "match_monitor_health")) {
-            $module.FailJson(
-                "Invalid value '$override_value' for 'AlertSeverity'. " +
-                "Valid values: information, warning, error, match_monitor_health"
-            )
-        }
-    }
-    "AlertOnState" {
-        if ($normalized_value -notin @("error", "warning")) {
-            $module.FailJson(
-                "Invalid value '$override_value' for 'AlertOnState'. " +
-                "Valid values: error, warning"
-            )
-        }
-    }
-    { $_ -in @("AutoResolve", "GenerateAlert", "Enabled") } {
-        if ($normalized_value -notin @("true", "false")) {
-            $module.FailJson(
-                "Invalid value '$override_value' for '$override_property'. " +
-                "Valid values: true, false"
-            )
-        }
-    }
+if ($SYSTEM_PROPERTY_CHOICES.ContainsKey($override_property)) {
+    Assert-OverrideValue -property_name $override_property -value $normalized_value -module $module `
+        -choices $SYSTEM_PROPERTY_CHOICES[$override_property]
 }
 
 if ($override_property -notin ($system_params_enabled + $system_params_alert) -and
@@ -245,12 +244,8 @@ if ($override_property -notin ($system_params_enabled + $system_params_alert) -a
         Where-Object { $_.Name -eq $override_property } |
         Select-Object -First 1
     if ($null -ne $param_obj) {
-        $type_str = [string]$param_obj.ParameterType
-        Assert-CustomParameterValue `
-            -type_str      $type_str `
-            -property_name $override_property `
-            -value         $override_value `
-            -module        $module
+        Assert-OverrideValue -property_name $override_property -value $override_value -module $module `
+            -type_str ([string]$param_obj.ParameterType)
     }
 }
 

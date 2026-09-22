@@ -48,16 +48,19 @@ Function Get-MonitorManagementPackDisplayName {
 Function Get-OverrideManagementPackDisplayName {
     <#
     Resolves the display name of the management pack that stores an override.
-    Three methods are attempted in order so that the result is correct regardless
-    of whether the override object supports each method:
-      A. GetManagementPack() SDK call         — most reliable when available.
-      B. .ManagementPack.DisplayName / .Name  — property reference fallback.
-      C. Get-SCOMManagementPack -Id           — explicit query by MP Id.
-    Returns "Unknown" when none of the three methods succeed.
+    Three methods are attempted in order because certain override types (e.g. Enabled
+    overrides) may return $null or an object with an empty DisplayName from the first
+    method, requiring a fallback to reach the management pack name:
+      A. GetManagementPack() SDK call         — works for most override types; may return
+                                                $null or empty DisplayName for some (e.g. Enabled).
+      B. .ManagementPack.DisplayName / .Name  — fallback when Method A returns an unusable object.
+      C. Get-SCOMManagementPack -Id           — last resort when the MP object is null but the
+                                                MP Id is still accessible for a fresh lookup.
+    Returns "Unknown" when none of the three methods produce a usable name.
     #>
     param ([Parameter(Mandatory = $true)][object]$override)
 
-    # Method A: Direct SDK call.
+    # Method A: May return $null for some override types
     try {
         $mp = $override.GetManagementPack()
         if ($null -ne $mp -and -not [string]::IsNullOrWhiteSpace($mp.DisplayName)) {
@@ -65,10 +68,10 @@ Function Get-OverrideManagementPackDisplayName {
         }
     }
     catch {
-        $null = $_  # GetManagementPack() not available on all override types; try next method
+        $null = $_
     }
 
-    # Method B: ManagementPack property reference on the override object.
+    # Method B: Used when Method A returns $null or an object whose DisplayName is empty.
     try {
         if ($null -ne $override.ManagementPack) {
             if (-not [string]::IsNullOrWhiteSpace($override.ManagementPack.DisplayName)) {
@@ -80,7 +83,7 @@ Function Get-OverrideManagementPackDisplayName {
         }
     }
     catch {
-        $null = $_  # .ManagementPack property may not exist on this override type; try next method
+        $null = $_
     }
 
     # Method C: Explicit query by management pack Id.
@@ -93,7 +96,7 @@ Function Get-OverrideManagementPackDisplayName {
         }
     }
     catch {
-        $null = $_  # ManagementPack.Id lookup failed; all methods exhausted
+        $null = $_
     }
 
     return "Unknown"
