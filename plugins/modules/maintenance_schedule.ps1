@@ -5,86 +5,8 @@
 
 #AnsibleRequires -CSharpUtil Ansible.Basic
 #AnsibleRequires -PowerShell ..module_utils._SCOMPsSetupUtils
+#AnsibleRequires -PowerShell ..module_utils._MaintenanceScheduleUtils
 
-
-# Maps the Ansible frequency choice -> the SCOM schedule FreqType integer (SQL-Agent style).
-$FREQUENCY_MAP = @{
-    once = 1
-    daily = 4
-    weekly = 8
-    monthly = 16
-}
-
-# Maps the Ansible reason choice -> the MaintenanceModeReason enum name.
-$REASON_MAP = @{
-    planned_other = "PlannedOther"
-    unplanned_other = "UnplannedOther"
-    planned_hardware_maintenance = "PlannedHardwareMaintenance"
-    unplanned_hardware_maintenance = "UnplannedHardwareMaintenance"
-    planned_hardware_installation = "PlannedHardwareInstallation"
-    unplanned_hardware_installation = "UnplannedHardwareInstallation"
-    planned_operating_system_reconfiguration = "PlannedOperatingSystemReconfiguration"
-    unplanned_operating_system_reconfiguration = "UnplannedOperatingSystemReconfiguration"
-    planned_application_maintenance = "PlannedApplicationMaintenance"
-    unplanned_application_maintenance = "UnplannedApplicationMaintenance"
-    application_installation = "ApplicationInstallation"
-    application_unresponsive = "ApplicationUnresponsive"
-    application_unstable = "ApplicationUnstable"
-    security_issue = "SecurityIssue"
-    loss_of_network_connectivity = "LossOfNetworkConnectivity"
-}
-
-
-Function ConvertTo-FrequencyString {
-    param (
-        [Parameter(Mandatory = $true)][AllowNull()]$freqType
-    )
-
-    switch ([int]$freqType) {
-        1 { return "once" }
-        4 { return "daily" }
-        8 { return "weekly" }
-        16 { return "monthly" }
-        default { return "custom_$freqType" }
-    }
-}
-
-
-Function ConvertTo-ReasonString {
-    param (
-        [Parameter(Mandatory = $true)][AllowNull()]$reason
-    )
-
-    $reason_name = [string]$reason
-    foreach ($key in $REASON_MAP.Keys) {
-        if ($REASON_MAP[$key] -eq $reason_name) {
-            return $key
-        }
-    }
-    return $reason_name
-}
-
-
-Function Get-MonitoringObjectIdString {
-    <#
-    Returns the sorted list of monitoring object GUID strings currently attached to a
-    maintenance schedule (the MonitoringObjects property is a list of GUIDs).
-    #>
-    param (
-        [Parameter(Mandatory = $true)][AllowNull()]$schedule
-    )
-
-    if ($null -eq $schedule -or $null -eq $schedule.MonitoringObjects) {
-        return @()
-    }
-
-    $ids = [System.Collections.Generic.List[string]]::new()
-    foreach ($object_id in $schedule.MonitoringObjects) {
-        $ids.Add([string]$object_id)
-    }
-
-    return @($ids | Sort-Object -Unique)
-}
 
 
 Function Resolve-SCOMMonitoringObjectId {
@@ -121,35 +43,6 @@ Function Resolve-SCOMMonitoringObjectId {
     }
 
     $module.FailJson("Could not resolve monitoring object '$target' to a SCOM group or class instance.")
-}
-
-
-Function Format-MaintenanceScheduleResult {
-    param (
-        [Parameter(Mandatory = $true)][object]$schedule
-    )
-
-    $frequency = if ($null -ne $schedule.ScheduleRecurrence) {
-        ConvertTo-FrequencyString -freqType $schedule.ScheduleRecurrence.FreqType
-    }
-    else {
-        ""
-    }
-
-    return @{
-        schedule_id = $schedule.ScheduleId.ToString()
-        name = [string]$schedule.ScheduleName
-        enabled = [bool]$schedule.IsEnabled
-        recursive = [bool]$schedule.Recursive
-        duration = [int]$schedule.Duration
-        reason = ConvertTo-ReasonString -reason $schedule.ReasonCode
-        comments = if ($null -ne $schedule.Comments) { [string]$schedule.Comments } else { "" }
-        active_start_time = Format-DateTimeAsStringSafely -dateTimeObject $schedule.ActiveStartTime
-        active_end_date = Format-DateTimeAsStringSafely -dateTimeObject $schedule.ActiveEndDate
-        is_recurrence = [bool]$schedule.IsRecurrence
-        frequency = $frequency
-        monitoring_objects = @(Get-MonitoringObjectIdString -schedule $schedule)
-    }
 }
 
 
@@ -259,15 +152,12 @@ if ($state -eq "absent") {
     $module.ExitJson()
 }
 
-# state == present - build the desired configuration.
 $duration = $module.Params.duration
-$reason_enum = $REASON_MAP[$module.Params.reason]
+$reason_enum = ConvertTo-PascalCase -value $module.Params.reason
 $comments = $module.Params.comments
 $enabled = $module.Params.enabled
 $recursive = $module.Params.recursive
-$freq_type = $FREQUENCY_MAP[$module.Params.frequency]
-# FreqInterval is not applicable for one-time schedules (SCOM stores 0).
-# For recurring schedules default to 1 when the user does not supply a value.
+$freq_type = ConvertTo-FrequencyInt -frequency $module.Params.frequency
 $freq_interval = if ($null -ne $module.Params.freq_interval) {
     $module.Params.freq_interval
 }
@@ -296,9 +186,6 @@ if ($null -ne $module.Params.active_end_date) {
     }
 }
 
-# Resolve the desired monitoring objects to a sorted, unique GUID set.
-# When omitted (null), existing monitoring objects are left untouched (idempotent).
-# An empty list is rejected — a schedule with no targets is invalid in SCOM.
 $monitoring_objects_specified = $null -ne $module.Params.monitoring_objects
 $desired_object_ids = @()
 $desired_object_guids = @()
@@ -319,7 +206,6 @@ if ($monitoring_objects_specified) {
 }
 
 if ($null -eq $existing) {
-    # Create a new schedule — monitoring_objects is required here since SCOM needs at least one target.
     if (-not $monitoring_objects_specified) {
         $module.FailJson("'monitoring_objects' is required when creating a new maintenance schedule.")
     }

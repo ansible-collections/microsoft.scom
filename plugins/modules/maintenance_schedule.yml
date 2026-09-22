@@ -6,12 +6,8 @@ DOCUMENTATION:
   module: maintenance_schedule
   short_description: Manage SCOM maintenance schedules.
   description:
-    - Creates, updates, or removes a SCOM maintenance schedule that automatically places
+    - Creates, updates, or removes an SCOM maintenance schedule that automatically places
       one or more monitored objects into maintenance mode on a recurring or one-time basis.
-    - Idempotent by schedule name - an existing schedule is updated in place when its
-      configuration differs from the requested state.
-    - Schedule name must be unique within the management group.
-    - Supports check mode.
   author:
     - Shahar Golshani (@shahargolshani)
     - Ansible Ecosystem Engineering team (@eco-ansible-content)
