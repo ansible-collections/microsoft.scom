@@ -1,0 +1,443 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta content="2.27.0" name="antsibull-docs" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>microsoft.scom.monitor_override module – Manage SCOM monitor overrides. &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=b54c304f" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="microsoft.scom.monitor_override_info module – Retrieve SCOM monitors and their overrides by Monitor ID, Display Name, or Target Class." href="monitor_override_info_module.html" />
+    <link rel="prev" title="microsoft.scom.management_pack_info module – Retrieve information about installed SCOM management packs." href="management_pack_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Microsoft Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Microsoft.Scom</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#communication">Communication</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Microsoft Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Microsoft.Scom</a></li>
+      <li class="breadcrumb-item active">microsoft.scom.monitor_override module – Manage SCOM monitor overrides.</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ansible-collections/microsoft.scom/edit/main/plugins/modules/monitor_override.yml?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-microsoft-scom-monitor-override-module"></span><section id="microsoft-scom-monitor-override-module-manage-scom-monitor-overrides">
+<h1>microsoft.scom.monitor_override module – Manage SCOM monitor overrides.<a class="headerlink" href="#microsoft-scom-monitor-override-module-manage-scom-monitor-overrides" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/microsoft/scom/">microsoft.scom collection</a> (version 2.0.0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">microsoft.scom</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-microsoft-scom-monitor-override-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">microsoft.scom.monitor_override</span></code>.</p>
+</div>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Changes the value of an override that is already applied to a SCOM monitor.</p></li>
+<li><p>This module can enable or disable a SCOM monitor for a specific class or group.</p></li>
+<li><p>All overrides except for <code class="docutils literal notranslate"><span class="pre">Enabled</span></code> must already exist.</p></li>
+<li><p>Use <a class="reference internal" href="monitor_override_info_module.html#ansible-collections-microsoft-scom-monitor-override-info-module"><span class="std std-ref">microsoft.scom.monitor_override_info</span></a> to discover which overrides are in effect and their current values.</p></li>
+</ul>
+</section>
+<section id="requirements">
+<span id="ansible-collections-microsoft-scom-monitor-override-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>Must execute on the SCOM Management Server via WinRM</p></li>
+<li><p>SCOM Operations Console installed on the target host (provides the OperationsManager PowerShell module or the legacy Microsoft.EnterpriseManagement PSSnapins)</p></li>
+<li><p>SCOM 2012 R2, 2016, 2019, or 2022</p></li>
+<li><p>SCOM Operators role (minimum) for the executing account</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-management_pack"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-parameter-management-pack"><strong>management_pack</strong></p>
+<a class="ansibleOptionLink" href="#parameter-management_pack" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The internal name or display name of the unsealed management pack that will store a new <code class="docutils literal notranslate"><span class="pre">Enabled</span></code> override.</p>
+<p>Only applies when creating a new override.</p>
+<p>Not idempotent when <code class="docutils literal notranslate"><span class="pre">Enabled</span></code> already exists.</p>
+<p>Not required for other properties.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-monitor_id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-parameter-monitor-id"><strong>monitor_id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-monitor_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The unique GUID of the monitor to act on.</p>
+<p>Use <a class="reference internal" href="monitor_override_info_module.html#ansible-collections-microsoft-scom-monitor-override-info-module"><span class="std std-ref">microsoft.scom.monitor_override_info</span></a> to find the monitor GUID.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-override_property"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-parameter-override-property"><strong>override_property</strong></p>
+<a class="ansibleOptionLink" href="#parameter-override_property" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The name of the monitor property whose override value should be changed.</p>
+<p>Must be one of the system properties listed below, or a custom configuration parameter exposed by the monitor.</p>
+<p>System (Enabled): <code class="docutils literal notranslate"><span class="pre">Enabled</span></code></p>
+<p>System (Alert): <code class="docutils literal notranslate"><span class="pre">GenerateAlert</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoResolve</span></code>, <code class="docutils literal notranslate"><span class="pre">AlertPriority</span></code>, <code class="docutils literal notranslate"><span class="pre">AlertSeverity</span></code>, <code class="docutils literal notranslate"><span class="pre">AlertOnState</span></code></p>
+<p>Custom: any parameter name of the target monitor, e.g. <code class="docutils literal notranslate"><span class="pre">Threshold</span></code>, <code class="docutils literal notranslate"><span class="pre">Timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">IntervalSeconds</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-override_value"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-parameter-override-value"><strong>override_value</strong></p>
+<a class="ansibleOptionLink" href="#parameter-override_value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The new value to set for the override.</p>
+<p>For boolean properties (<code class="docutils literal notranslate"><span class="pre">Enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoResolve</span></code>, <code class="docutils literal notranslate"><span class="pre">GenerateAlert</span></code>) use <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">AlertPriority</span></code>: <code class="docutils literal notranslate"><span class="pre">low</span></code>, <code class="docutils literal notranslate"><span class="pre">normal</span></code>, <code class="docutils literal notranslate"><span class="pre">high</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">AlertSeverity</span></code>: <code class="docutils literal notranslate"><span class="pre">information</span></code>, <code class="docutils literal notranslate"><span class="pre">warning</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>, <code class="docutils literal notranslate"><span class="pre">match_monitor_health</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">AlertOnState</span></code>: <code class="docutils literal notranslate"><span class="pre">error</span></code>, <code class="docutils literal notranslate"><span class="pre">warning</span></code>.</p>
+<p>For custom configuration parameters provide the raw value as a string (e.g. <code class="docutils literal notranslate"><span class="pre">300</span></code> for a timeout).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-target"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-parameter-target"><strong>target</strong></p>
+<a class="ansibleOptionLink" href="#parameter-target" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether the override is scoped to a <code class="docutils literal notranslate"><span class="pre">class</span></code> or a <code class="docutils literal notranslate"><span class="pre">group</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;class&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;group&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-target_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-parameter-target-name"><strong>target_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-target_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The display name of the class or group the override is scoped to.</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>These modules must run directly on the SCOM Management Server via WinRM. The OperationsManager PowerShell module is only installed on hosts where the SCOM Operations Console has been installed, and the SDK auto-connects to the local Management Group on import. Running on any other Windows host will fail.</p></li>
+<li><p>Supported SCOM versions: 2012 R2, 2016, 2019, 2022.</p></li>
+<li><p>The account executing this module must hold at minimum the SCOM Operators role on the Management Group. Administrative operations (e.g. importing management packs) require the SCOM Administrators role.</p></li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disable monitor for the Gateway class</span>
+<span class="w">  </span><span class="nt">microsoft.scom.monitor_override</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">monitor_id</span><span class="p">:</span><span class="w"> </span><span class="s">"1acfe2b7-72ac-8975-8452-b343a8b581ed"</span>
+<span class="w">    </span><span class="nt">override_property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Enabled</span>
+<span class="w">    </span><span class="nt">override_value</span><span class="p">:</span><span class="w"> </span><span class="s">"false"</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">class</span>
+<span class="w">    </span><span class="nt">target_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Gateway"</span>
+<span class="w">    </span><span class="nt">management_pack</span><span class="p">:</span><span class="w"> </span><span class="s">"AnsibleAlert"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Re-enable monitor for the AD Assignment Resource Pool group</span>
+<span class="w">  </span><span class="nt">microsoft.scom.monitor_override</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">monitor_id</span><span class="p">:</span><span class="w"> </span><span class="s">"1acfe2b7-72ac-8975-8452-b343a8b581ed"</span>
+<span class="w">    </span><span class="nt">override_property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Enabled</span>
+<span class="w">    </span><span class="nt">override_value</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">group</span>
+<span class="w">    </span><span class="nt">target_name</span><span class="p">:</span><span class="w"> </span><span class="s">"AD</span><span class="nv"> </span><span class="s">Assignment</span><span class="nv"> </span><span class="s">Resource</span><span class="nv"> </span><span class="s">Pool"</span>
+<span class="w">    </span><span class="nt">management_pack</span><span class="p">:</span><span class="w"> </span><span class="s">"AnsibleAlert"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Change alert priority to High for a class-wide override</span>
+<span class="w">  </span><span class="nt">microsoft.scom.monitor_override</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">monitor_id</span><span class="p">:</span><span class="w"> </span><span class="s">"e389b054-48c8-f526-9572-1dba95ca753e"</span>
+<span class="w">    </span><span class="nt">override_property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AlertPriority</span>
+<span class="w">    </span><span class="nt">override_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">class</span>
+<span class="w">    </span><span class="nt">target_name</span><span class="p">:</span><span class="w"> </span><span class="s">"CPU</span><span class="nv"> </span><span class="s">Processor</span><span class="nv"> </span><span class="s">(Bytemobile)"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Change alert priority to High for a group-scoped override</span>
+<span class="w">  </span><span class="nt">microsoft.scom.monitor_override</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">monitor_id</span><span class="p">:</span><span class="w"> </span><span class="s">"1acfe2b7-72ac-8975-8452-b343a8b581ed"</span>
+<span class="w">    </span><span class="nt">override_property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AlertPriority</span>
+<span class="w">    </span><span class="nt">override_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">group</span>
+<span class="w">    </span><span class="nt">target_name</span><span class="p">:</span><span class="w"> </span><span class="s">"AD</span><span class="nv"> </span><span class="s">Assignment</span><span class="nv"> </span><span class="s">Resource</span><span class="nv"> </span><span class="s">Pool"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update Threshold custom parameter for a class-wide override</span>
+<span class="w">  </span><span class="nt">microsoft.scom.monitor_override</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">monitor_id</span><span class="p">:</span><span class="w"> </span><span class="s">"e389b054-48c8-f526-9572-1dba95ca753e"</span>
+<span class="w">    </span><span class="nt">override_property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Threshold</span>
+<span class="w">    </span><span class="nt">override_value</span><span class="p">:</span><span class="w"> </span><span class="s">"95"</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">class</span>
+<span class="w">    </span><span class="nt">target_name</span><span class="p">:</span><span class="w"> </span><span class="s">"CPU</span><span class="nv"> </span><span class="s">Processor</span><span class="nv"> </span><span class="s">(Bytemobile)"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update Threshold custom parameter for a group-scoped override</span>
+<span class="w">  </span><span class="nt">microsoft.scom.monitor_override</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">monitor_id</span><span class="p">:</span><span class="w"> </span><span class="s">"1acfe2b7-72ac-8975-8452-b343a8b581ed"</span>
+<span class="w">    </span><span class="nt">override_property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Threshold</span>
+<span class="w">    </span><span class="nt">override_value</span><span class="p">:</span><span class="w"> </span><span class="s">"95"</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">group</span>
+<span class="w">    </span><span class="nt">target_name</span><span class="p">:</span><span class="w"> </span><span class="s">"AD</span><span class="nv"> </span><span class="s">Assignment</span><span class="nv"> </span><span class="s">Resource</span><span class="nv"> </span><span class="s">Pool"</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/projects/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible devel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-current_value"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-current-value"><strong>current_value</strong></p>
+<a class="ansibleOptionLink" href="#return-current_value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The value of the override before the change. Only present when the module runs in check mode and a change would be made.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when check_mode is true and changed is true</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override"><strong>override</strong></p>
+<a class="ansibleOptionLink" href="#return-override" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The state of the override after the module ran.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/management_pack"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-management-pack"><strong>management_pack</strong></p>
+<a class="ansibleOptionLink" href="#return-override/management_pack" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The display name of the management pack that stores the override.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/monitor_display_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-monitor-display-name"><strong>monitor_display_name</strong></p>
+<a class="ansibleOptionLink" href="#return-override/monitor_display_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The display name of the monitor.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/monitor_id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-monitor-id"><strong>monitor_id</strong></p>
+<a class="ansibleOptionLink" href="#return-override/monitor_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The GUID of the monitor.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/override_property"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-override-property"><strong>override_property</strong></p>
+<a class="ansibleOptionLink" href="#return-override/override_property" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The property that was overridden.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/override_value"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-override-value"><strong>override_value</strong></p>
+<a class="ansibleOptionLink" href="#return-override/override_value" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The new value of the override after the module ran.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/target"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-target"><strong>target</strong></p>
+<a class="ansibleOptionLink" href="#return-override/target" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The scope type — <code class="docutils literal notranslate"><span class="pre">class</span></code> or <code class="docutils literal notranslate"><span class="pre">group</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-override/target_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-monitor-override-module-return-override-target-name"><strong>target_name</strong></p>
+<a class="ansibleOptionLink" href="#return-override/target_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The display name of the class or group the override is scoped to.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Shahar Golshani (&#64;shahargolshani)</p></li>
+<li><p>Ansible Ecosystem Engineering team (&#64;eco-ansible-content)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom/issues" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom/issues/new/choose" rel="noopener external" target="_blank">Report an issue</a></span></li>
+<li><span><a class="reference internal" href="index.html#communication-for-microsoft-scom"><span class="std std-ref">Communication</span></a></span></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="management_pack_info_module.html" class="btn btn-neutral float-left" title="microsoft.scom.management_pack_info module – Retrieve information about installed SCOM management packs." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="monitor_override_info_module.html" class="btn btn-neutral float-right" title="microsoft.scom.monitor_override_info module – Retrieve SCOM monitors and their overrides by Monitor ID, Display Name, or Target Class." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
