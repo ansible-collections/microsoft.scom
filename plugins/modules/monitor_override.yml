@@ -10,7 +10,6 @@ DOCUMENTATION:
     - This module can enable or disable a SCOM monitor for a specific class or group.
     - All overrides except for C(Enabled) must already exist.
     - Use M(microsoft.scom.monitor_override_info) to discover which overrides are in effect and their current values.
-    - Supports check mode.
   author:
     - Shahar Golshani (@shahargolshani)
     - Ansible Ecosystem Engineering team (@eco-ansible-content)
