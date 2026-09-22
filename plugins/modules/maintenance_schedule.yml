@@ -35,7 +35,7 @@ DOCUMENTATION:
         - A group or object display names members of the maintenance schedule.
         - Each name is resolved first as a group, then as a class instance.
         - Required when creating a new schedule. When omitted on an existing schedule, the current targets are left unchanged.
-        - Must contain at least one group or object name.
+        - Must contain at least one group or object name when specified.
       type: list
       elements: str
       required: false
