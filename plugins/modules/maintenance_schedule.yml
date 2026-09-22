@@ -1,0 +1,205 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: maintenance_schedule
+  short_description: Manage SCOM maintenance schedules.
+  description:
+    - Creates, updates, or removes an SCOM maintenance schedule that automatically places
+      one or more monitored objects into maintenance mode on a recurring or one-time basis.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - The unique name of the maintenance schedule.
+        - Used as the identity for idempotency and for removal.
+      type: str
+      required: true
+    state:
+      description:
+        - C(present) ensures the schedule exists with the requested configuration.
+        - C(absent) removes the schedule if it exists.
+      type: str
+      required: false
+      default: present
+      choices:
+        - present
+        - absent
+    monitoring_objects:
+      description:
+        - A group or object display names members of the maintenance schedule.
+        - Each name is resolved first as a group, then as a class instance.
+        - Required when creating a new schedule. When omitted on an existing schedule, the current targets are left unchanged.
+        - Must contain at least one group or object name when specified.
+      type: list
+      elements: str
+      required: false
+      default: null
+    duration:
+      description:
+        - The duration of each maintenance window, in minutes.
+        - Required when C(state=present).
+      type: int
+      required: false
+    reason:
+      description:
+        - The maintenance mode reason recorded for the schedule.
+        - Required when C(state=present).
+      type: str
+      required: false
+      choices:
+        - planned_other
+        - unplanned_other
+        - planned_hardware_maintenance
+        - unplanned_hardware_maintenance
+        - planned_hardware_installation
+        - unplanned_hardware_installation
+        - planned_operating_system_reconfiguration
+        - unplanned_operating_system_reconfiguration
+        - planned_application_maintenance
+        - unplanned_application_maintenance
+        - application_installation
+        - application_unresponsive
+        - application_unstable
+        - security_issue
+        - loss_of_network_connectivity
+    active_start_time:
+      description:
+        - The date and time the schedule becomes active (first run time).
+        - Accepts any value parseable as a date/time (for example C(2026-09-01 02:00:00)).
+        - Required when C(state=present).
+      type: str
+      required: false
+    active_end_date:
+      description:
+        - The date and time the schedule stops recurring.
+        - When omitted, the schedule has no end date.
+      type: str
+      required: false
+    comments:
+      description:
+        - Free-text comments stored with the schedule.
+      type: str
+      required: false
+    enabled:
+      description:
+        - Whether the schedule is enabled.
+      type: bool
+      required: false
+      default: true
+    recursive:
+      description:
+        - Whether contained objects of the targeted groups are also placed into maintenance mode.
+      type: bool
+      required: false
+      default: true
+    frequency:
+      description:
+        - How often the maintenance window recurs.
+        - C(once) runs a single one-time window at O(active_start_time).
+      type: str
+      required: false
+      default: once
+      choices:
+        - once
+        - daily
+        - weekly
+        - monthly
+    freq_interval:
+      description:
+        - The recurrence interval, interpreted according to O(frequency)
+          (for example the day-of-week bitmask for weekly, or day of month for monthly).
+        - Defaults to 1 when omitted.
+      type: int
+      required: false
+    freq_recurrence_factor:
+      description:
+        - The recurrence factor (for example run every N weeks or N months).
+      type: int
+      required: false
+
+EXAMPLES: |
+  - name: Create a one-time maintenance schedule for a group
+    microsoft.scom.maintenance_schedule:
+      name: "Patch Window - Web Servers"
+      monitoring_objects:
+        - "Web Servers Group"
+      duration: 120
+      reason: planned_application_maintenance
+      active_start_time: "2026-09-01 02:00:00"
+      comments: "Monthly patch cycle"
+
+  - name: Create a daily recurring maintenance schedule
+    microsoft.scom.maintenance_schedule:
+      name: "Nightly Batch Window"
+      monitoring_objects:
+        - "Batch Servers Group"
+      duration: 60
+      reason: planned_other
+      active_start_time: "2026-09-01 23:00:00"
+      frequency: daily
+
+  - name: Disable a maintenance schedule
+    microsoft.scom.maintenance_schedule:
+      name: "Nightly Batch Window"
+      monitoring_objects:
+        - "Batch Servers Group"
+      duration: 60
+      reason: planned_other
+      active_start_time: "2026-09-01 23:00:00"
+      frequency: daily
+      enabled: false
+
+  - name: Remove a maintenance schedule
+    microsoft.scom.maintenance_schedule:
+      name: "Patch Window - Web Servers"
+      state: absent
+
+RETURN:
+  schedule:
+    description: The SCOM maintenance schedule after applying changes. Not returned when C(state=absent).
+    returned: when C(state=present)
+    type: dict
+    contains:
+      schedule_id:
+        description: GUID of the maintenance schedule.
+        type: str
+      name:
+        description: Name of the maintenance schedule.
+        type: str
+      enabled:
+        description: Whether the schedule is enabled.
+        type: bool
+      recursive:
+        description: Whether contained objects are also placed into maintenance mode.
+        type: bool
+      duration:
+        description: Duration of each maintenance window, in minutes.
+        type: int
+      reason:
+        description: The maintenance mode reason.
+        type: str
+      comments:
+        description: Comments stored with the schedule.
+        type: str
+      active_start_time:
+        description: The schedule's active start time (yyyy-MM-dd HH:mm:ss z).
+        type: str
+      active_end_date:
+        description: The schedule's active end date (yyyy-MM-dd HH:mm:ss z).
+        type: str
+      is_recurrence:
+        description: Whether the schedule recurs.
+        type: bool
+      frequency:
+        description: The recurrence frequency (once, daily, weekly, monthly).
+        type: str
+      monitoring_objects:
+        description: The list of monitoring object GUIDs targeted by the schedule.
+        type: list
+        elements: str

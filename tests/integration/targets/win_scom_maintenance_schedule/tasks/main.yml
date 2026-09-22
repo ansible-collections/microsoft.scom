@@ -1,0 +1,380 @@
+---
+# Integration tests for microsoft.scom.maintenance_schedule and maintenance_schedule_info.
+#
+# A throwaway maintenance schedule targeting a real SCOM group is created, updated,
+# and removed. The active start time is set far in the future so the group is never
+# actually placed into maintenance mode during the test. The schedule is always
+# cleaned up so the SCOM environment is left untouched.
+#
+# Every real change is verified in two ways:
+#   1. The return value of the maintenance_schedule module itself.
+#   2. A follow-up maintenance_schedule_info call that reads the live SCOM state.
+
+- name: Maintenance_schedule and maintenance_schedule_info integration test suite
+  block:
+    # =========================================================
+    # SETUP: discover a group to target and pre-clean
+    # =========================================================
+    - name: Discover a SCOM group display name to target
+      ansible.windows.win_powershell:
+        script: |
+          Import-Module OperationsManager -ErrorAction SilentlyContinue
+          # Pick a group whose display name is unique so -DisplayName resolves to one object.
+          $group = Get-SCOMGroup |
+            Group-Object DisplayName |
+            Where-Object { $_.Count -eq 1 } |
+            Select-Object -First 1
+          $Ansible.Result.group = $group.Group[0].DisplayName
+          $Ansible.Changed = $false
+      register: _group
+
+    - name: Set the target group fact
+      ansible.builtin.set_fact:
+        scom_test_schedule_group: "{{ _group.result.group }}"
+
+    - name: Pre-clean any leftover test maintenance schedule
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        state: absent
+
+    # =========================================================
+    # PHASE 1: create — check mode
+    # =========================================================
+    - name: "[Create] Check mode — report changed without creating"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        monitoring_objects:
+          - "{{ scom_test_schedule_group }}"
+        duration: "{{ scom_test_schedule_duration }}"
+        reason: "{{ scom_test_schedule_reason }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      check_mode: true
+      register: _create_check
+
+    - name: "[Create] Verify via info — schedule must not exist after check mode"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_create_check
+
+    - name: "[Create] Assert check mode result and info"
+      ansible.builtin.assert:
+        that:
+          - _create_check.changed == true
+          - _info_create_check.schedules | length == 0
+        fail_msg: >-
+          Check mode should report changed=true but must not create the schedule.
+          changed={{ _create_check.changed }}, schedules={{ _info_create_check.schedules | length }}
+
+    # =========================================================
+    # PHASE 2: create — real
+    # =========================================================
+    - name: "[Create] Create the maintenance schedule"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        monitoring_objects:
+          - "{{ scom_test_schedule_group }}"
+        duration: "{{ scom_test_schedule_duration }}"
+        reason: "{{ scom_test_schedule_reason }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      register: _create
+
+    - name: "[Create] Verify via info — schedule must exist with correct values"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_create
+
+    - name: "[Create] Assert module result and info"
+      ansible.builtin.assert:
+        that:
+          - _create.changed == true
+          - _create.schedule.name == scom_test_schedule_name
+          - _create.schedule.duration == (scom_test_schedule_duration | int)
+          - _create.schedule.reason == scom_test_schedule_reason
+          - _create.schedule.frequency == 'once'
+          - _create.schedule.monitoring_objects | length == 1
+          - _info_create.schedules | length == 1
+          - (_info_create.schedules | first).name == scom_test_schedule_name
+          - (_info_create.schedules | first).duration == (scom_test_schedule_duration | int)
+          - (_info_create.schedules | first).reason == scom_test_schedule_reason
+          - (_info_create.schedules | first).frequency == 'once'
+          - (_info_create.schedules | first).monitoring_objects | length == 1
+        fail_msg: >-
+          Schedule was not created correctly.
+          module changed={{ _create.changed }}, info schedules={{ _info_create.schedules | length }}
+
+    # =========================================================
+    # PHASE 3: idempotency after create
+    # =========================================================
+    - name: "[Create] Re-apply the same schedule (idempotency)"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        monitoring_objects:
+          - "{{ scom_test_schedule_group }}"
+        duration: "{{ scom_test_schedule_duration }}"
+        reason: "{{ scom_test_schedule_reason }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      register: _create_idem
+
+    - name: "[Create] Verify via info — values unchanged after idempotency run"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_create_idem
+
+    - name: "[Create] Assert idempotency: no change in module result or info"
+      ansible.builtin.assert:
+        that:
+          - _create_idem.changed == false
+          - _info_create_idem.schedules | length == 1
+          - (_info_create_idem.schedules | first).duration == (scom_test_schedule_duration | int)
+          - (_info_create_idem.schedules | first).reason == scom_test_schedule_reason
+        fail_msg: >-
+          Schedule must be idempotent when nothing changed.
+          changed={{ _create_idem.changed }}, duration={{ (_info_create_idem.schedules | first).duration }}
+
+    # =========================================================
+    # PHASE 4: update — change duration
+    # =========================================================
+    - name: "[Duration] Update the schedule duration"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        monitoring_objects:
+          - "{{ scom_test_schedule_group }}"
+        duration: "{{ scom_test_schedule_duration_updated }}"
+        reason: "{{ scom_test_schedule_reason }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      register: _update_duration
+
+    - name: "[Duration] Verify via info — duration must reflect new value"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_update_duration
+
+    - name: "[Duration] Assert module result and info"
+      ansible.builtin.assert:
+        that:
+          - _update_duration.changed == true
+          - _update_duration.schedule.duration == (scom_test_schedule_duration_updated | int)
+          - _info_update_duration.schedules | length == 1
+          - (_info_update_duration.schedules | first).duration == (scom_test_schedule_duration_updated | int)
+          - (_info_update_duration.schedules | first).reason == scom_test_schedule_reason
+        fail_msg: >-
+          Duration was not updated correctly.
+          module duration={{ _update_duration.schedule.duration }},
+          info duration={{ (_info_update_duration.schedules | first).duration }}
+
+    - name: "[Duration] Re-apply the updated duration (idempotency)"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        monitoring_objects:
+          - "{{ scom_test_schedule_group }}"
+        duration: "{{ scom_test_schedule_duration_updated }}"
+        reason: "{{ scom_test_schedule_reason }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      register: _update_duration_idem
+
+    - name: "[Duration] Verify via info — no change after idempotency run"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_update_duration_idem
+
+    - name: "[Duration] Assert idempotency: no change in module result or info"
+      ansible.builtin.assert:
+        that:
+          - _update_duration_idem.changed == false
+          - (_info_update_duration_idem.schedules | first).duration == (scom_test_schedule_duration_updated | int)
+        fail_msg: >-
+          Schedule must be idempotent after a duration update.
+          changed={{ _update_duration_idem.changed }},
+          duration={{ (_info_update_duration_idem.schedules | first).duration }}
+
+    # =========================================================
+    # PHASE 5: update — change reason
+    # =========================================================
+    - name: "[Reason] Update the schedule reason"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        duration: "{{ scom_test_schedule_duration_updated }}"
+        reason: "{{ scom_test_schedule_reason_updated }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      register: _update_reason
+
+    - name: "[Reason] Verify via info — reason must reflect new value"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_update_reason
+
+    - name: "[Reason] Assert module result and info"
+      ansible.builtin.assert:
+        that:
+          - _update_reason.changed == true
+          - _update_reason.schedule.reason == scom_test_schedule_reason_updated
+          - _info_update_reason.schedules | length == 1
+          - (_info_update_reason.schedules | first).reason == scom_test_schedule_reason_updated
+          - (_info_update_reason.schedules | first).duration == (scom_test_schedule_duration_updated | int)
+        fail_msg: >-
+          Reason was not updated correctly.
+          module reason={{ _update_reason.schedule.reason }},
+          info reason={{ (_info_update_reason.schedules | first).reason }}
+
+    - name: "[Reason] Re-apply the updated reason (idempotency)"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        duration: "{{ scom_test_schedule_duration_updated }}"
+        reason: "{{ scom_test_schedule_reason_updated }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+      register: _update_reason_idem
+
+    - name: "[Reason] Verify via info — no change after idempotency run"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_update_reason_idem
+
+    - name: "[Reason] Assert idempotency: no change in module result or info"
+      ansible.builtin.assert:
+        that:
+          - _update_reason_idem.changed == false
+          - (_info_update_reason_idem.schedules | first).reason == scom_test_schedule_reason_updated
+        fail_msg: >-
+          Schedule must be idempotent after a reason update.
+          changed={{ _update_reason_idem.changed }},
+          reason={{ (_info_update_reason_idem.schedules | first).reason }}
+
+    # =========================================================
+    # PHASE 6: update — change enabled
+    # =========================================================
+    - name: "[Enabled] Update the schedule enabled to false"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        duration: "{{ scom_test_schedule_duration_updated }}"
+        reason: "{{ scom_test_schedule_reason_updated }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+        enabled: "{{ scom_test_schedule_enabled_updated }}"
+      register: _update_enabled
+
+    - name: "[Enabled] Verify via info — enabled must reflect new value"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_update_enabled
+
+    - name: "[Enabled] Assert module result and info"
+      ansible.builtin.assert:
+        that:
+          - _update_enabled.changed == true
+          - _update_enabled.schedule.enabled == scom_test_schedule_enabled_updated
+          - _info_update_enabled.schedules | length == 1
+          - (_info_update_enabled.schedules | first).enabled == scom_test_schedule_enabled_updated
+          - (_info_update_enabled.schedules | first).reason == scom_test_schedule_reason_updated
+        fail_msg: >-
+          Enabled was not updated correctly.
+          module enabled={{ _update_enabled.schedule.enabled }},
+          info enabled={{ (_info_update_enabled.schedules | first).enabled }}
+
+    - name: "[Enabled] Re-apply the updated enabled (idempotency)"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        duration: "{{ scom_test_schedule_duration_updated }}"
+        reason: "{{ scom_test_schedule_reason_updated }}"
+        active_start_time: "{{ scom_test_schedule_start_time }}"
+        frequency: once
+        enabled: "{{ scom_test_schedule_enabled_updated }}"
+      register: _update_enabled_idem
+
+    - name: "[Enabled] Verify via info — no change after idempotency run"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_update_enabled_idem
+
+    - name: "[Enabled] Assert idempotency: no change in module result or info"
+      ansible.builtin.assert:
+        that:
+          - _update_enabled_idem.changed == false
+          - (_info_update_enabled_idem.schedules | first).enabled == scom_test_schedule_enabled_updated
+        fail_msg: >-
+          Schedule must be idempotent after an enabled update.
+          changed={{ _update_enabled_idem.changed }},
+          enabled={{ (_info_update_enabled_idem.schedules | first).enabled }}
+
+    # =========================================================
+    # PHASE 7: remove — check mode
+    # =========================================================
+    - name: "[Remove] Check mode — report changed without removing"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        state: absent
+      check_mode: true
+      register: _remove_check
+
+    - name: "[Remove] Verify via info — schedule must still exist after check mode"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_remove_check
+
+    - name: "[Remove] Assert check mode result and info"
+      ansible.builtin.assert:
+        that:
+          - _remove_check.changed == true
+          - _info_remove_check.schedules | length == 1
+        fail_msg: >-
+          Check mode should report changed=true but must not remove the schedule.
+          changed={{ _remove_check.changed }}, schedules={{ _info_remove_check.schedules | length }}
+
+    # =========================================================
+    # PHASE 8: remove — real
+    # =========================================================
+    - name: "[Remove] Remove the schedule"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        state: absent
+      register: _remove
+
+    - name: "[Remove] Verify via info — schedule must no longer exist"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_remove
+
+    - name: "[Remove] Assert module result and info"
+      ansible.builtin.assert:
+        that:
+          - _remove.changed == true
+          - _info_remove.schedules | length == 0
+        fail_msg: >-
+          Schedule was not removed correctly.
+          changed={{ _remove.changed }}, schedules={{ _info_remove.schedules | length }}
+
+    - name: "[Remove] Remove the schedule again (idempotency)"
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        state: absent
+      register: _remove_idem
+
+    - name: "[Remove] Verify via info — schedule must remain absent"
+      microsoft.scom.maintenance_schedule_info:
+        name: "{{ scom_test_schedule_name }}"
+      register: _info_remove_idem
+
+    - name: "[Remove] Assert idempotency: no change in module result or info"
+      ansible.builtin.assert:
+        that:
+          - _remove_idem.changed == false
+          - _info_remove_idem.schedules | length == 0
+        fail_msg: >-
+          Removing an already-absent schedule must be idempotent.
+          changed={{ _remove_idem.changed }}, schedules={{ _info_remove_idem.schedules | length }}
+
+  always:
+    # =========================================================
+    # ALWAYS: remove the test schedule regardless of failures
+    # =========================================================
+    - name: Safety cleanup - remove the test maintenance schedule
+      microsoft.scom.maintenance_schedule:
+        name: "{{ scom_test_schedule_name }}"
+        state: absent
+      failed_when: false
