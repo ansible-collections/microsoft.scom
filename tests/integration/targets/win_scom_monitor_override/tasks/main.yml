@@ -1,0 +1,439 @@
+---
+# Integration tests for microsoft.scom.monitor_override and microsoft.scom.monitor_override_info.
+#
+# Tests three override properties on a real SCOM monitor:
+#   1. AlertPriority  – Class-scoped enum property
+#   2. Enabled        – Class-scoped enable/disable override
+#   3. Threshold      – Group-scoped custom integer parameter
+#
+# Each scenario runs: check_mode → real change → idempotency → info verification → restore.
+# Negative tests run at the end with ignore_errors: true and assert the expected error messages.
+#
+# Pre-condition: all three overrides must exist in SCOM with the values defined in defaults/main.yml
+# (High / true / 11).  The always block restores those original values unconditionally.
+
+- name: Monitor_override integration tests
+  block:
+    # =========================================================================
+    # SCENARIO 1: AlertPriority — Class-scoped, change High → low
+    # =========================================================================
+
+    - name: "[AlertPriority] Check mode — report change without applying"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ alert_priority_property }}"
+        override_value: "{{ alert_priority_new_value }}"
+        target: "{{ alert_priority_target }}"
+        target_name: "{{ alert_priority_target_name }}"
+      check_mode: true
+      register: ap_check
+
+    - name: "[AlertPriority] Assert check mode reports changed=true and shows desired value"
+      ansible.builtin.assert:
+        that:
+          - ap_check.changed == true
+          - ap_check.override.override_property == alert_priority_property
+          - ap_check.override.override_value | lower == alert_priority_new_value | lower
+          - ap_check.override.target_name == alert_priority_target_name
+          - ap_check.current_value | lower == alert_priority_original_value | lower
+        fail_msg: "AlertPriority check mode assertion failed: {{ ap_check }}"
+
+    - name: "[AlertPriority] Verify check mode did NOT apply — info still shows original value"
+      microsoft.scom.monitor_override_info:
+        monitor_id: "{{ monitor_id }}"
+      register: ap_info_before
+
+    - name: "[AlertPriority] Assert info still shows original value after check mode"
+      ansible.builtin.assert:
+        that:
+          - ap_info_before.monitors | length > 0
+          - ap_info_before.monitors[0].overrides |
+            selectattr('override_property', 'equalto', alert_priority_property) |
+            selectattr('target_name', 'equalto', alert_priority_target_name) |
+            map(attribute='override_value') | list | first | lower == alert_priority_original_value | lower
+        fail_msg: "Check mode incorrectly modified the AlertPriority override: {{ ap_info_before }}"
+
+    - name: "[AlertPriority] Apply change — High to Low"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ alert_priority_property }}"
+        override_value: "{{ alert_priority_new_value }}"
+        target: "{{ alert_priority_target }}"
+        target_name: "{{ alert_priority_target_name }}"
+      register: ap_apply
+
+    - name: "[AlertPriority] Assert apply reports changed=true and correct values"
+      ansible.builtin.assert:
+        that:
+          - ap_apply.changed == true
+          - ap_apply.override.override_property == alert_priority_property
+          - ap_apply.override.override_value | lower == alert_priority_new_value | lower
+          - ap_apply.override.target_name == alert_priority_target_name
+        fail_msg: "AlertPriority apply assertion failed: {{ ap_apply }}"
+
+    - name: "[AlertPriority] Verify via info module that new value is persisted"
+      microsoft.scom.monitor_override_info:
+        monitor_id: "{{ monitor_id }}"
+      register: ap_info_after
+
+    - name: "[AlertPriority] Assert info shows new value"
+      ansible.builtin.assert:
+        that:
+          - ap_info_after.monitors[0].overrides |
+            selectattr('override_property', 'equalto', alert_priority_property) |
+            selectattr('target_name', 'equalto', alert_priority_target_name) |
+            map(attribute='override_value') | list | first | lower == alert_priority_new_value | lower
+        fail_msg: "Info module did not show updated AlertPriority value: {{ ap_info_after }}"
+
+    - name: "[AlertPriority] Idempotency — apply same value again"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ alert_priority_property }}"
+        override_value: "{{ alert_priority_new_value }}"
+        target: "{{ alert_priority_target }}"
+        target_name: "{{ alert_priority_target_name }}"
+      register: ap_idem
+
+    - name: "[AlertPriority] Assert idempotency — changed=false"
+      ansible.builtin.assert:
+        that:
+          - ap_idem.changed == false
+        fail_msg: "AlertPriority must be idempotent when value is already set: {{ ap_idem }}"
+
+    # Restore original value for next test cycle
+    - name: "[AlertPriority] Restore original value (High)"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ alert_priority_property }}"
+        override_value: "{{ alert_priority_original_value }}"
+        target: "{{ alert_priority_target }}"
+        target_name: "{{ alert_priority_target_name }}"
+      register: ap_restore
+
+    - name: "[AlertPriority] Assert restore succeeded"
+      ansible.builtin.assert:
+        that:
+          - ap_restore.changed == true
+          - ap_restore.override.override_value | lower == alert_priority_original_value | lower
+        fail_msg: "AlertPriority restore assertion failed: {{ ap_restore }}"
+
+    # =========================================================================
+    # SCENARIO 2: Enabled — Class-scoped, change true → false
+    # =========================================================================
+
+    - name: "[Enabled] Check mode — report change without applying"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "{{ enabled_new_value }}"
+        target: "{{ enabled_target }}"
+        target_name: "{{ enabled_target_name }}"
+        management_pack: "{{ enabled_management_pack }}"
+      check_mode: true
+      register: en_check
+
+    - name: "[Enabled] Assert check mode reports changed=true"
+      ansible.builtin.assert:
+        that:
+          - en_check.changed == true
+          - en_check.override.override_property == enabled_property
+          - en_check.override.override_value | lower == enabled_new_value | lower
+          - en_check.override.target_name == enabled_target_name
+          - en_check.current_value | lower == enabled_original_value | lower
+        fail_msg: "Enabled check mode assertion failed: {{ en_check }}"
+
+    - name: "[Enabled] Verify check mode did NOT apply — info still shows original value"
+      microsoft.scom.monitor_override_info:
+        monitor_id: "{{ monitor_id }}"
+      register: en_info_before
+
+    - name: "[Enabled] Assert info still shows original value after check mode"
+      ansible.builtin.assert:
+        that:
+          - en_info_before.monitors[0].overrides |
+            selectattr('override_property', 'equalto', enabled_property) |
+            selectattr('target_name', 'equalto', enabled_target_name) |
+            map(attribute='override_value') | list | first | lower == enabled_original_value | lower
+        fail_msg: "Check mode incorrectly modified the Enabled override: {{ en_info_before }}"
+
+    - name: "[Enabled] Apply change — true to false (disable monitor for class)"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "{{ enabled_new_value }}"
+        target: "{{ enabled_target }}"
+        target_name: "{{ enabled_target_name }}"
+        management_pack: "{{ enabled_management_pack }}"
+      register: en_apply
+
+    - name: "[Enabled] Assert apply reports changed=true and correct values"
+      ansible.builtin.assert:
+        that:
+          - en_apply.changed == true
+          - en_apply.override.override_property == enabled_property
+          - en_apply.override.override_value | lower == enabled_new_value | lower
+          - en_apply.override.target_name == enabled_target_name
+          - en_apply.override.management_pack == enabled_management_pack
+        fail_msg: "Enabled apply assertion failed: {{ en_apply }}"
+
+    - name: "[Enabled] Verify via info module that new value is persisted"
+      microsoft.scom.monitor_override_info:
+        monitor_id: "{{ monitor_id }}"
+      register: en_info_after
+
+    - name: "[Enabled] Assert info shows monitor is now disabled for the class"
+      ansible.builtin.assert:
+        that:
+          - en_info_after.monitors[0].overrides |
+            selectattr('override_property', 'equalto', enabled_property) |
+            selectattr('target_name', 'equalto', enabled_target_name) |
+            map(attribute='override_value') | list | first | lower == enabled_new_value | lower
+        fail_msg: "Info module did not show updated Enabled value: {{ en_info_after }}"
+
+    - name: "[Enabled] Idempotency — apply same value again"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "{{ enabled_new_value }}"
+        target: "{{ enabled_target }}"
+        target_name: "{{ enabled_target_name }}"
+        management_pack: "{{ enabled_management_pack }}"
+      register: en_idem
+
+    - name: "[Enabled] Assert idempotency — changed=false"
+      ansible.builtin.assert:
+        that:
+          - en_idem.changed == false
+        fail_msg: "Enabled must be idempotent when value is already set: {{ en_idem }}"
+
+    # Restore original value for next test cycle
+    - name: "[Enabled] Restore original value (true — re-enable monitor for class)"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "{{ enabled_original_value }}"
+        target: "{{ enabled_target }}"
+        target_name: "{{ enabled_target_name }}"
+        management_pack: "{{ enabled_management_pack }}"
+      register: en_restore
+
+    - name: "[Enabled] Assert restore succeeded"
+      ansible.builtin.assert:
+        that:
+          - en_restore.changed == true
+          - en_restore.override.override_value | lower == enabled_original_value | lower
+        fail_msg: "Enabled restore assertion failed: {{ en_restore }}"
+
+    # =========================================================================
+    # SCENARIO 3: Threshold — Group-scoped, change 11 → 21
+    # =========================================================================
+
+    - name: "[Threshold] Check mode — report change without applying"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ threshold_property }}"
+        override_value: "{{ threshold_new_value }}"
+        target: "{{ threshold_target }}"
+        target_name: "{{ threshold_target_name }}"
+      check_mode: true
+      register: th_check
+
+    - name: "[Threshold] Assert check mode reports changed=true and shows desired value"
+      ansible.builtin.assert:
+        that:
+          - th_check.changed == true
+          - th_check.override.override_property == threshold_property
+          - th_check.override.override_value == threshold_new_value
+          - th_check.override.target_name == threshold_target_name
+          - th_check.current_value == threshold_original_value
+        fail_msg: "Threshold check mode assertion failed: {{ th_check }}"
+
+    - name: "[Threshold] Verify check mode did NOT apply — info still shows original value"
+      microsoft.scom.monitor_override_info:
+        monitor_id: "{{ monitor_id }}"
+      register: th_info_before
+
+    - name: "[Threshold] Assert info still shows original value after check mode"
+      ansible.builtin.assert:
+        that:
+          - th_info_before.monitors[0].overrides |
+            selectattr('override_property', 'equalto', threshold_property) |
+            selectattr('target_name', 'equalto', threshold_target_name) |
+            map(attribute='override_value') | list | first == threshold_original_value
+        fail_msg: "Check mode incorrectly modified the Threshold override: {{ th_info_before }}"
+
+    - name: "[Threshold] Apply change — 11 to 21"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ threshold_property }}"
+        override_value: "{{ threshold_new_value }}"
+        target: "{{ threshold_target }}"
+        target_name: "{{ threshold_target_name }}"
+      register: th_apply
+
+    - name: "[Threshold] Assert apply reports changed=true and correct values"
+      ansible.builtin.assert:
+        that:
+          - th_apply.changed == true
+          - th_apply.override.override_property == threshold_property
+          - th_apply.override.override_value == threshold_new_value
+          - th_apply.override.target_name == threshold_target_name
+        fail_msg: "Threshold apply assertion failed: {{ th_apply }}"
+
+    - name: "[Threshold] Verify via info module that new value is persisted"
+      microsoft.scom.monitor_override_info:
+        monitor_id: "{{ monitor_id }}"
+      register: th_info_after
+
+    - name: "[Threshold] Assert info shows new threshold value"
+      ansible.builtin.assert:
+        that:
+          - th_info_after.monitors[0].overrides |
+            selectattr('override_property', 'equalto', threshold_property) |
+            selectattr('target_name', 'equalto', threshold_target_name) |
+            map(attribute='override_value') | list | first == threshold_new_value
+        fail_msg: "Info module did not show updated Threshold value: {{ th_info_after }}"
+
+    - name: "[Threshold] Idempotency — apply same value again"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ threshold_property }}"
+        override_value: "{{ threshold_new_value }}"
+        target: "{{ threshold_target }}"
+        target_name: "{{ threshold_target_name }}"
+      register: th_idem
+
+    - name: "[Threshold] Assert idempotency — changed=false"
+      ansible.builtin.assert:
+        that:
+          - th_idem.changed == false
+        fail_msg: "Threshold must be idempotent when value is already set: {{ th_idem }}"
+
+    # Restore original value for next test cycle
+    - name: "[Threshold] Restore original value (11)"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ threshold_property }}"
+        override_value: "{{ threshold_original_value }}"
+        target: "{{ threshold_target }}"
+        target_name: "{{ threshold_target_name }}"
+      register: th_restore
+
+    - name: "[Threshold] Assert restore succeeded"
+      ansible.builtin.assert:
+        that:
+          - th_restore.changed == true
+          - th_restore.override.override_value == threshold_original_value
+        fail_msg: "Threshold restore assertion failed: {{ th_restore }}"
+
+    # =========================================================================
+    # NEGATIVE TESTS — wrong or missing inputs; all expected to fail
+    # =========================================================================
+
+    - name: "[Negative] AlertPriority — invalid enum value 'aaa'"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ alert_priority_property }}"
+        override_value: "aaa"
+        target: "{{ alert_priority_target }}"
+        target_name: "{{ alert_priority_target_name }}"
+      ignore_errors: true
+      register: neg_alert_priority_bad_value
+
+    - name: "[Negative] Assert invalid AlertPriority value produces a meaningful error"
+      ansible.builtin.assert:
+        that:
+          - neg_alert_priority_bad_value.failed == true
+          - "'AlertPriority' in neg_alert_priority_bad_value.msg"
+          - "'aaa' in neg_alert_priority_bad_value.msg"
+          - "'low' in neg_alert_priority_bad_value.msg or 'Valid values' in neg_alert_priority_bad_value.msg"
+        fail_msg: "Expected a validation error for bad AlertPriority value, got: {{ neg_alert_priority_bad_value.msg }}"
+
+    - name: "[Negative] Threshold — invalid integer value 'aaa'"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ threshold_property }}"
+        override_value: "aaa"
+        target: "{{ threshold_target }}"
+        target_name: "{{ threshold_target_name }}"
+      ignore_errors: true
+      register: neg_threshold_bad_value
+
+    - name: "[Negative] Assert invalid Threshold value produces a meaningful error"
+      ansible.builtin.assert:
+        that:
+          - neg_threshold_bad_value.failed == true
+          - "'Threshold' in neg_threshold_bad_value.msg or 'aaa' in neg_threshold_bad_value.msg"
+          - "'integer' in neg_threshold_bad_value.msg or
+            'ParameterType' in neg_threshold_bad_value.msg"
+        fail_msg: "Expected a type validation error for bad Threshold value, got: {{ neg_threshold_bad_value.msg }}"
+
+    - name: "[Negative] Enabled — non-existent group name"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "false"
+        target: "group"
+        target_name: "NonExistent_Group_XYZ_Integration_Test"
+        management_pack: "{{ enabled_management_pack }}"
+      ignore_errors: true
+      register: neg_enabled_bad_group
+
+    - name: "[Negative] Assert non-existent group produces a meaningful error"
+      ansible.builtin.assert:
+        that:
+          - neg_enabled_bad_group.failed == true
+          - "'NonExistent_Group_XYZ_Integration_Test' in neg_enabled_bad_group.msg or 'group' in neg_enabled_bad_group.msg"
+        fail_msg: "Expected a not-found error for non-existent group, got: {{ neg_enabled_bad_group.msg }}"
+
+    - name: "[Negative] Enabled — non-existent class name"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "false"
+        target: "class"
+        target_name: "NonExistent_Class_XYZ_Integration_Test"
+        management_pack: "{{ enabled_management_pack }}"
+      ignore_errors: true
+      register: neg_enabled_bad_class
+
+    - name: "[Negative] Assert non-existent class produces a meaningful error"
+      ansible.builtin.assert:
+        that:
+          - neg_enabled_bad_class.failed == true
+          - "'NonExistent_Class_XYZ_Integration_Test' in neg_enabled_bad_class.msg or 'class' in neg_enabled_bad_class.msg"
+        fail_msg: "Expected a not-found error for non-existent class, got: {{ neg_enabled_bad_class.msg }}"
+
+  always:
+    # =========================================================================
+    # ALWAYS: restore all three overrides to their original values.
+    # Runs unconditionally so a mid-test failure does not leave the system dirty.
+    # =========================================================================
+
+    - name: "[Restore] AlertPriority back to original value"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ alert_priority_property }}"
+        override_value: "{{ alert_priority_original_value }}"
+        target: "{{ alert_priority_target }}"
+        target_name: "{{ alert_priority_target_name }}"
+      failed_when: false
+
+    - name: "[Restore] Enabled back to original value"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ enabled_property }}"
+        override_value: "{{ enabled_original_value }}"
+        target: "{{ enabled_target }}"
+        target_name: "{{ enabled_target_name }}"
+        management_pack: "{{ enabled_management_pack }}"
+      failed_when: false
+
+    - name: "[Restore] Threshold back to original value"
+      microsoft.scom.monitor_override:
+        monitor_id: "{{ monitor_id }}"
+        override_property: "{{ threshold_property }}"
+        override_value: "{{ threshold_original_value }}"
+        target: "{{ threshold_target }}"
+        target_name: "{{ threshold_target_name }}"
+      failed_when: false

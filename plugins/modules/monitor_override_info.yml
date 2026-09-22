@@ -1,0 +1,129 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: monitor_override_info
+  short_description: Retrieve SCOM monitors and their overrides by Monitor ID, Display Name, or Target Class.
+  description:
+    - Returns one or more SCOM monitors together with all of their overrides.
+    - The return values of this module can be used for the set module to modify the overrides.
+    - This is a read-only module and never changes the SCOM environment.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    monitor_id:
+      description:
+        - The unique GUID of the monitor to retrieve.
+        - Returns at most one monitor.
+        - Mutually exclusive with C(monitor_display_name) and C(monitor_target_class).
+      type: str
+      required: false
+    monitor_display_name:
+      description:
+        - The display name of the monitor(s) to retrieve.
+        - May match more than one monitor when monitors from different management packs share the same display name.
+        - Mutually exclusive with C(monitor_id) and C(monitor_target_class).
+      type: str
+      required: false
+    monitor_target_class:
+      description:
+        - The display name of the SCOM class whose monitors should be retrieved.
+        - All monitors whose target class matches are returned, regardless of their display name.
+        - Mutually exclusive with C(monitor_id) and C(monitor_display_name).
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get a single monitor by its GUID
+    microsoft.scom.monitor_override_info:
+      monitor_id: "5dbf2777-5537-e364-b1f9-3a2ca2da34ac"
+    register: result
+
+  - name: Get all monitors whose display name matches
+    microsoft.scom.monitor_override_info:
+      monitor_display_name: "VLAN Depends on Underlying Network Devices"
+    register: result
+
+  - name: Get all monitors targeting the VLAN class
+    microsoft.scom.monitor_override_info:
+      monitor_target_class: "VLAN"
+    register: result
+
+  - name: Iterate over every monitor and its overrides
+    ansible.builtin.debug:
+      msg: "Monitor {{ item.display_name }} has {{ item.overrides | length }} override(s)"
+    loop: "{{ result.monitors }}"
+
+RETURN:
+  monitors:
+    description: List of monitors that matched the query. Empty when no monitors are found.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      type:
+        description: The .NET type name of the monitor (e.g. C(ManagementPackUnitMonitor)).
+        type: str
+      management_pack:
+        description: The display name of the management pack that defines the monitor.
+        type: str
+      display_name:
+        description: The display name of the monitor.
+        type: str
+      target_class:
+        description: The display name of the class the monitor targets. Empty when the class cannot be resolved.
+        type: str
+      enabled:
+        description: Whether the monitor is enabled by default (before any override).
+        type: bool
+      overridden:
+        description: Whether the monitor has at least one non-category override applied.
+        type: bool
+      id:
+        description: The unique GUID of the monitor.
+        type: str
+      overrides:
+        description: All overrides applied to this monitor. Empty list when no overrides exist.
+        type: list
+        elements: dict
+        contains:
+          monitor_display_name:
+            description: The display name of the monitor this override belongs to.
+            type: str
+          monitor_internal_name:
+            description: The internal (fully qualified) name of the monitor.
+            type: str
+          monitor_id:
+            description: The GUID of the monitor this override belongs to.
+            type: str
+          override_id:
+            description: The unique GUID of the override itself.
+            type: str
+          override_management_pack:
+            description: >-
+              The display name of the management pack that stores the override.
+            type: str
+          override_scope:
+            description: >-
+              The scope the override acts on.
+              C(Class) means the override applies to the whole target class with no further restriction.
+              C(Group) means the override is scoped to a SCOM group (instance or group class definition).
+            type: str
+          target_name:
+            description: >-
+              The display name of the scope target, the group, class, or object the override is scoped to.
+            type: str
+          override_property:
+            description: >-
+              The monitor property or configuration parameter being overridden.
+            type: str
+          override_value:
+            description: The value the override sets for the property.
+            type: str
+          enforced:
+            description: Whether the override is enforced (cannot be further overridden at a lower scope).
+            type: bool
