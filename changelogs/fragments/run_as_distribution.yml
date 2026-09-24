@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - run_as_distribution - new module to manage the credential distribution policy and targets of SCOM RunAs accounts.
+  - run_as_distribution_info - new module to retrieve the credential distribution policy and targets of SCOM RunAs accounts.
