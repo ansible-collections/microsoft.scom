@@ -1,0 +1,71 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: run_as_account_info
+  short_description: Retrieve information about SCOM RunAs accounts.
+  description:
+    - Returns a list of SCOM RunAs accounts, optionally filtered by name or ID.
+    - The credential password is never returned by the module.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - Filter by the display name of the RunAs account.
+        - Mutually exclusive with C(id).
+      type: str
+      required: false
+    id:
+      description:
+        - Filter by the GUID of the RunAs account.
+        - Mutually exclusive with C(name).
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get all RunAs accounts
+    microsoft.scom.run_as_account_info:
+    register: all_accounts
+
+  - name: Get a specific RunAs account by name
+    microsoft.scom.run_as_account_info:
+      name: "Contoso SQL Monitoring Account"
+    register: sql_account
+
+  - name: Get a RunAs account by ID
+    microsoft.scom.run_as_account_info:
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+RETURN:
+  run_as_accounts:
+    description: List of SCOM RunAs accounts matching the filter.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      id:
+        description: GUID of the RunAs account.
+        type: str
+      name:
+        description: Display name of the RunAs account.
+        type: str
+      description:
+        description: Description of the RunAs account.
+        type: str
+      domain:
+        description: Domain of the represented credential (Windows accounts).
+        type: str
+      user_name:
+        description: User name of the represented credential.
+        type: str
+      account_type:
+        description: The secure-data credential type of the account (for example C(WindowsCredentialSecureData)).
+        type: str
+      last_modified:
+        description: Timestamp of the last modification (yyyy-MM-dd HH:mm:ss z).
+        type: str

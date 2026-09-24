@@ -1,0 +1,408 @@
+---
+# Integration tests for microsoft.scom.run_as_account and run_as_account_info.
+#
+# The test name "Ansible Integration Test RunAs Account" is shared across all
+# four accounts (different account_type each). SCOM does not enforce name
+# uniqueness, so the PRE-CLEANUP and ALWAYS blocks iterate over every matching
+# account by ID to ensure a clean slate.
+#
+# Phase overview:
+#   PRE-CLEANUP  - remove any leftover test accounts from a previous run
+#   PHASE 1      - check mode (windows only)
+#   PHASE 2      - real create (windows, basic_authentication, binary_authentication, community_string)
+#   PHASE 3      - idempotency (binary_authentication, windows)
+#   PHASE 4      - info module verification for all 4 accounts
+#   PHASE 5      - update credentials (windows, binary_authentication, community_string)
+#   PHASE 6      - remove with check mode, remove all 4, removal idempotency
+#   ALWAYS       - safety net cleanup regardless of failures
+
+- name: Run the run_as_account and run_as_account_info integration test suite
+  block:
+
+    # =========================================================
+    # PRE-CLEANUP: remove any leftover accounts from a prior run
+    # =========================================================
+    - name: PRE-CLEANUP | get all leftover test accounts by name
+      microsoft.scom.run_as_account_info:
+        name: "{{ scom_test_run_as_name }}"
+      register: _pre_cleanup
+
+    - name: PRE-CLEANUP | delete each leftover account by id
+      microsoft.scom.run_as_account:
+        state: absent
+        id: "{{ item.id }}"
+      loop: "{{ _pre_cleanup.run_as_accounts }}"
+      loop_control:
+        label: "{{ item.id }} ({{ item.account_type }})"
+
+    # =========================================================
+    # PHASE 1: check mode — windows account type only
+    # =========================================================
+    - name: PHASE 1 | create windows account in check mode
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type1 }}"
+        domain: "{{ scom_test_run_as_domain }}"
+        username: "{{ scom_test_run_as_username }}"
+        password: "{{ scom_test_run_as_password }}"
+      check_mode: true
+      register: _phase1_check
+
+    - name: PHASE 1 | assert check mode reports changed
+      ansible.builtin.assert:
+        that:
+          - _phase1_check.changed == true
+        fail_msg: "check mode should report changed=true for a new account"
+
+    - name: PHASE 1 | confirm check mode did not create the account
+      microsoft.scom.run_as_account_info:
+        name: "{{ scom_test_run_as_name }}"
+      register: _phase1_verify
+
+    - name: PHASE 1 | assert no account exists after check mode
+      ansible.builtin.assert:
+        that:
+          - _phase1_verify.run_as_accounts | length == 0
+        fail_msg: "check mode must not create the account in SCOM"
+
+    # =========================================================
+    # PHASE 2: create real accounts (4 types)
+    # =========================================================
+    - name: PHASE 2 | create windows account
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type1 }}"
+        domain: "{{ scom_test_run_as_domain }}"
+        username: "{{ scom_test_run_as_username }}"
+        password: "{{ scom_test_run_as_password }}"
+      register: _phase2_windows
+
+    - name: PHASE 2 | assert windows account created
+      ansible.builtin.assert:
+        that:
+          - _phase2_windows.changed == true
+          - _phase2_windows.run_as_account.name == scom_test_run_as_name
+          - _phase2_windows.run_as_account.id | length > 0
+          - "'password' not in _phase2_windows.run_as_account"
+        fail_msg: "windows RunAs account was not created correctly"
+
+    - name: PHASE 2 | create basic_authentication account
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type3 }}"
+        username: "{{ scom_test_run_as_username }}"
+        password: "{{ scom_test_run_as_password }}"
+      register: _phase2_basic
+
+    - name: PHASE 2 | assert basic_authentication account created
+      ansible.builtin.assert:
+        that:
+          - _phase2_basic.changed == true
+          - _phase2_basic.run_as_account.name == scom_test_run_as_name
+          - _phase2_basic.run_as_account.id | length > 0
+          - "'password' not in _phase2_basic.run_as_account"
+        fail_msg: "basic_authentication RunAs account was not created correctly"
+
+    - name: PHASE 2 | create binary_authentication account
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type6 }}"
+        binary_file_path: "{{ scom_test_run_as_binary_file_path }}"
+      register: _phase2_binary
+
+    - name: PHASE 2 | assert binary_authentication account created
+      ansible.builtin.assert:
+        that:
+          - _phase2_binary.changed == true
+          - _phase2_binary.run_as_account.name == scom_test_run_as_name
+          - _phase2_binary.run_as_account.id | length > 0
+        fail_msg: "binary_authentication RunAs account was not created correctly"
+
+    - name: PHASE 2 | create community_string account
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type2 }}"
+        community_string: "{{ scom_test_run_as_community_string }}"
+      register: _phase2_community
+
+    - name: PHASE 2 | assert community_string account created
+      ansible.builtin.assert:
+        that:
+          - _phase2_community.changed == true
+          - _phase2_community.run_as_account.name == scom_test_run_as_name
+          - _phase2_community.run_as_account.id | length > 0
+          - "'community_string' not in _phase2_community.run_as_account"
+        fail_msg: "community_string RunAs account was not created correctly"
+
+    # =========================================================
+    # PHASE 3: idempotency — binary_authentication and windows
+    # =========================================================
+    - name: PHASE 3 | create binary_authentication account again (idempotency)
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type6 }}"
+        binary_file_path: "{{ scom_test_run_as_binary_file_path }}"
+      register: _phase3_binary_idem
+
+    - name: PHASE 3 | assert binary_authentication is idempotent
+      ansible.builtin.assert:
+        that:
+          - _phase3_binary_idem.changed == false
+        fail_msg: "run_as_account must be idempotent when binary_authentication account already exists"
+
+    - name: PHASE 3 | create windows account again (idempotency)
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        description: "{{ scom_test_run_as_description }}"
+        account_type: "{{ scom_test_run_as_account_type1 }}"
+        domain: "{{ scom_test_run_as_domain }}"
+        username: "{{ scom_test_run_as_username }}"
+        password: "{{ scom_test_run_as_password }}"
+      register: _phase3_windows_idem
+
+    - name: PHASE 3 | assert windows is idempotent
+      ansible.builtin.assert:
+        that:
+          - _phase3_windows_idem.changed == false
+        fail_msg: "run_as_account must be idempotent when windows account already exists"
+
+    # =========================================================
+    # PHASE 4: info module — verify all 4 accounts
+    # =========================================================
+    - name: PHASE 4 | get all test accounts by name
+      microsoft.scom.run_as_account_info:
+        name: "{{ scom_test_run_as_name }}"
+      register: _phase4_all
+
+    - name: PHASE 4 | assert 4 accounts are returned
+      ansible.builtin.assert:
+        that:
+          - _phase4_all.run_as_accounts | length == 4
+        fail_msg: >-
+          Expected 4 test accounts with name '{{ scom_test_run_as_name }}',
+          got {{ _phase4_all.run_as_accounts | length }}
+
+    - name: PHASE 4 | assert windows account is in the result
+      ansible.builtin.assert:
+        that:
+          - _phase4_all.run_as_accounts
+            | selectattr('id', 'equalto', _phase2_windows.run_as_account.id)
+            | list | length == 1
+        fail_msg: "windows account (id={{ _phase2_windows.run_as_account.id }}) not found in info results"
+
+    - name: PHASE 4 | assert basic_authentication account is in the result
+      ansible.builtin.assert:
+        that:
+          - _phase4_all.run_as_accounts
+            | selectattr('id', 'equalto', _phase2_basic.run_as_account.id)
+            | list | length == 1
+        fail_msg: "basic_authentication account (id={{ _phase2_basic.run_as_account.id }}) not found in info results"
+
+    - name: PHASE 4 | assert binary_authentication account is in the result
+      ansible.builtin.assert:
+        that:
+          - _phase4_all.run_as_accounts
+            | selectattr('id', 'equalto', _phase2_binary.run_as_account.id)
+            | list | length == 1
+        fail_msg: "binary_authentication account (id={{ _phase2_binary.run_as_account.id }}) not found in info results"
+
+    - name: PHASE 4 | assert community_string account is in the result
+      ansible.builtin.assert:
+        that:
+          - _phase4_all.run_as_accounts
+            | selectattr('id', 'equalto', _phase2_community.run_as_account.id)
+            | list | length == 1
+        fail_msg: "community_string account (id={{ _phase2_community.run_as_account.id }}) not found in info results"
+
+    - name: PHASE 4 | get windows account by id directly
+      microsoft.scom.run_as_account_info:
+        id: "{{ _phase2_windows.run_as_account.id }}"
+      register: _phase4_by_id
+
+    - name: PHASE 4 | assert correct account returned when queried by id
+      ansible.builtin.assert:
+        that:
+          - _phase4_by_id.run_as_accounts | length == 1
+          - (_phase4_by_id.run_as_accounts | first).id == _phase2_windows.run_as_account.id
+          - (_phase4_by_id.run_as_accounts | first).name == scom_test_run_as_name
+        fail_msg: "run_as_account_info queried by id did not return the expected windows account"
+
+    # =========================================================
+    # PHASE 5: update credentials
+    # =========================================================
+    - name: PHASE 5 | update windows account credentials
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        account_type: "{{ scom_test_run_as_account_type1 }}"
+        domain: "{{ scom_test_run_as_domain }}"
+        username: "{{ scom_test_run_as_username }}"
+        password: "{{ scom_test_run_as_password_update }}"
+        update_password: true
+      register: _phase5_windows
+
+    - name: PHASE 5 | assert windows credentials updated and GUID preserved
+      ansible.builtin.assert:
+        that:
+          - _phase5_windows.changed == true
+          - _phase5_windows.run_as_account.id == _phase2_windows.run_as_account.id
+        fail_msg: >-
+          windows credential update should report changed=true and preserve the
+          account GUID (expected={{ _phase2_windows.run_as_account.id }},
+          got={{ _phase5_windows.run_as_account.id }})
+
+    - name: PHASE 5 | update binary_authentication credentials
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        account_type: "{{ scom_test_run_as_account_type6 }}"
+        binary_file_path: "{{ scom_test_run_as_binary_file_path_update }}"
+        update_password: true
+      register: _phase5_binary
+
+    - name: PHASE 5 | assert binary_authentication credentials updated and GUID preserved
+      ansible.builtin.assert:
+        that:
+          - _phase5_binary.changed == true
+          - _phase5_binary.run_as_account.id == _phase2_binary.run_as_account.id
+        fail_msg: >-
+          binary_authentication credential update should report changed=true and
+          preserve the account GUID (expected={{ _phase2_binary.run_as_account.id }},
+          got={{ _phase5_binary.run_as_account.id }})
+
+    - name: PHASE 5 | update community_string credentials
+      microsoft.scom.run_as_account:
+        name: "{{ scom_test_run_as_name }}"
+        account_type: "{{ scom_test_run_as_account_type2 }}"
+        community_string: "{{ scom_test_run_as_community_string_update }}"
+        update_password: true
+      register: _phase5_community
+
+    - name: PHASE 5 | assert community_string credentials updated and GUID preserved
+      ansible.builtin.assert:
+        that:
+          - _phase5_community.changed == true
+          - _phase5_community.run_as_account.id == _phase2_community.run_as_account.id
+        fail_msg: >-
+          community_string credential update should report changed=true and
+          preserve the account GUID (expected={{ _phase2_community.run_as_account.id }},
+          got={{ _phase5_community.run_as_account.id }})
+
+    # =========================================================
+    # PHASE 6: remove
+    # =========================================================
+    - name: PHASE 6 | remove windows account in check mode
+      microsoft.scom.run_as_account:
+        state: absent
+        id: "{{ _phase2_windows.run_as_account.id }}"
+      check_mode: true
+      register: _phase6_check
+
+    - name: PHASE 6 | assert check mode removal reports changed
+      ansible.builtin.assert:
+        that:
+          - _phase6_check.changed == true
+        fail_msg: "check mode removal should report changed=true when the account exists"
+
+    - name: PHASE 6 | confirm check mode did not remove the windows account
+      microsoft.scom.run_as_account_info:
+        id: "{{ _phase2_windows.run_as_account.id }}"
+      register: _phase6_check_verify
+
+    - name: PHASE 6 | assert windows account still exists after check mode removal
+      ansible.builtin.assert:
+        that:
+          - _phase6_check_verify.run_as_accounts | length == 1
+        fail_msg: "check mode must not remove the account in SCOM"
+
+    - name: PHASE 6 | remove windows account
+      microsoft.scom.run_as_account:
+        state: absent
+        id: "{{ _phase2_windows.run_as_account.id }}"
+      register: _phase6_windows
+
+    - name: PHASE 6 | assert windows account removed
+      ansible.builtin.assert:
+        that:
+          - _phase6_windows.changed == true
+        fail_msg: "windows account removal should report changed=true"
+
+    - name: PHASE 6 | remove remaining 3 accounts
+      microsoft.scom.run_as_account:
+        state: absent
+        id: "{{ item }}"
+      loop:
+        - "{{ _phase2_basic.run_as_account.id }}"
+        - "{{ _phase2_binary.run_as_account.id }}"
+        - "{{ _phase2_community.run_as_account.id }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: PHASE 6 | query each removed account by id
+      microsoft.scom.run_as_account_info:
+        id: "{{ item }}"
+      loop:
+        - "{{ _phase2_windows.run_as_account.id }}"
+        - "{{ _phase2_basic.run_as_account.id }}"
+        - "{{ _phase2_binary.run_as_account.id }}"
+        - "{{ _phase2_community.run_as_account.id }}"
+      register: _phase6_removal_verify
+      loop_control:
+        label: "{{ item }}"
+
+    - name: PHASE 6 | assert each removed account is gone
+      ansible.builtin.assert:
+        that:
+          - item.run_as_accounts | length == 0
+        fail_msg: "account {{ item.item }} should not exist after removal"
+      loop: "{{ _phase6_removal_verify.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: PHASE 6 | remove windows account again (idempotency)
+      microsoft.scom.run_as_account:
+        state: absent
+        id: "{{ _phase2_windows.run_as_account.id }}"
+      register: _phase6_idem
+
+    - name: PHASE 6 | assert absent is idempotent when account does not exist
+      ansible.builtin.assert:
+        that:
+          - _phase6_idem.changed == false
+        fail_msg: "state=absent must be idempotent when the account no longer exists"
+
+    - name: PHASE 6 | confirm all 4 accounts are gone
+      microsoft.scom.run_as_account_info:
+        name: "{{ scom_test_run_as_name }}"
+      register: _phase6_final
+
+    - name: PHASE 6 | assert no accounts remain after removal
+      ansible.builtin.assert:
+        that:
+          - _phase6_final.run_as_accounts | length == 0
+        fail_msg: >-
+          All 4 test accounts should have been removed, but
+          {{ _phase6_final.run_as_accounts | length }} still exist
+
+  always:
+    # =========================================================
+    # ALWAYS: safety net — remove every test account regardless of failures
+    # =========================================================
+    - name: ALWAYS | get remaining accounts (primary test name)
+      microsoft.scom.run_as_account_info:
+        name: "{{ scom_test_run_as_name }}"
+      register: _cleanup_primary
+      failed_when: false
+
+    - name: ALWAYS | remove each remaining primary test account by id
+      microsoft.scom.run_as_account:
+        state: absent
+        id: "{{ item.id }}"
+      loop: "{{ _cleanup_primary.run_as_accounts | default([]) }}"
+      loop_control:
+        label: "{{ item.id }} ({{ item.account_type }})"
+      failed_when: false

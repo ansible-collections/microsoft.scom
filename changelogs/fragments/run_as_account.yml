@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - run_as_account - new module to create and remove SCOM RunAs accounts for automated credential management.
+  - run_as_account_info - new module to retrieve information about SCOM RunAs accounts.
