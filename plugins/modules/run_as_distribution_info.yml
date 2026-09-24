@@ -1,0 +1,49 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: run_as_distribution_info
+  short_description: Retrieve the credential distribution policy of SCOM RunAs accounts.
+  description:
+    - Returns the distribution security policy (security level and targets) for one or all SCOM RunAs accounts.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    run_as_account:
+      description:
+        - The display name of a specific RunAs account.
+        - When omitted, the distribution policy of all RunAs accounts is returned.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get the distribution policy for a specific RunAs account
+    microsoft.scom.run_as_distribution_info:
+      run_as_account: "Contoso SQL Monitoring Account"
+    register: sql_distribution
+
+  - name: Get the distribution policy for all RunAs accounts
+    microsoft.scom.run_as_distribution_info:
+    register: all_distributions
+
+RETURN:
+  distributions:
+    description: List of RunAs account distribution policies matching the filter.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      run_as_account:
+        description: The display name of the RunAs account.
+        type: str
+      security_level:
+        description: The distribution security level (less_secure or more_secure).
+        type: str
+      computers:
+        description: The sorted list of distribution targets the credential is distributed to (empty for less_secure).
+        type: list
+        elements: str
