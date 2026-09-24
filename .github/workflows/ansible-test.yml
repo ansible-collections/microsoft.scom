@@ -5,10 +5,8 @@ on:
   pull_request_target:
     types: [opened, synchronize]
 
-  push:
-    branches:
-      - main
-      - stable-*
+  schedule:
+    - cron: '0 0 * * 0'  # Every Sunday at midnight UTC
 
   workflow_dispatch:
     inputs:
@@ -42,6 +40,8 @@ jobs:
       - run: echo "Deployment approved"
 
   # Determine which integration test targets need to run based on changed files.
+  # To associate a module_utils file with a specific integration target, name it
+  # _<PascalCase>Utils.psm1 — e.g. _RunAsDistributionUtils.psm1 → win_scom_run_as_distribution.
   detect-changes:
     name: Detect Changed Modules
     runs-on: ubuntu-latest
@@ -86,10 +86,15 @@ jobs:
             # Inlined target-detection logic (was: scripts/get_integration_targets.sh)
             #
             # Mapping rules:
-            #   plugins/modules/<name>.ps1|.yml      → win_scom_<name>
-            #   plugins/modules/<name>_info.ps1|.yml → win_scom_<name>  (strip _info)
-            #   plugins/module_utils/*               → ALL win_scom_* targets
-            #   tests/integration/targets/win_scom_* → win_scom_<name>
+            #   plugins/modules/<name>.ps1|.yml        → win_scom_<name>
+            #   plugins/modules/<name>_info.ps1|.yml   → win_scom_<name>  (strip _info suffix)
+            #   plugins/module_utils/_<Pascal>Utils.psm1
+            #       → derive target: strip leading _ and Utils.psm1 suffix,
+            #         convert PascalCase to snake_case, prepend win_scom_
+            #       → if tests/integration/targets/win_scom_<snake> exists → run that target only
+            #       → otherwise (shared/general utils, e.g. _SCOMPsSetupUtils.psm1) → ALL
+            #   plugins/module_utils/<other>           → ALL win_scom_* targets
+            #   tests/integration/targets/win_scom_*   → win_scom_<name>
             # ---------------------------------------------------------------
             MODULES_DIR="plugins/modules"
             MODULE_UTILS_DIR="plugins/module_utils"
@@ -100,8 +105,29 @@ jobs:
             while IFS= read -r file; do
               [[ -z "$file" ]] && continue
 
-              # Any module_utils change → run ALL integration tests
+              # module_utils change: try to map _<Pascal>Utils.psm1 → specific target
               if [[ "$file" == "${MODULE_UTILS_DIR}/"* ]]; then
+                utils_file=$(basename "$file")
+                # Match the naming convention: _<PascalCase>Utils.psm1
+                if [[ "$utils_file" == _*Utils.psm1 ]]; then
+                  pascal_name="${utils_file#_}"             # strip leading _
+                  pascal_name="${pascal_name%Utils.psm1}"  # strip Utils.psm1 suffix
+                  # Convert PascalCase → snake_case:
+                  #   insert _ before each uppercase letter, lowercase all, strip leading _
+                  snake_name=$(echo "$pascal_name" \
+                    | sed 's/\([A-Z]\)/_\1/g' \
+                    | tr '[:upper:]' '[:lower:]' \
+                    | sed 's/^_//')
+                  target="win_scom_${snake_name}"
+                  if [[ -d "${INTEGRATION_DIR}/${target}" ]]; then
+                    # Dedicated integration target found → run only that target
+                    if [[ " ${targets} " != *" ${target} "* ]]; then
+                      targets="${targets:+${targets} }${target}"
+                    fi
+                    continue
+                  fi
+                fi
+                # No dedicated target (shared/general utils) → run ALL
                 run_all=true
                 break
               fi
