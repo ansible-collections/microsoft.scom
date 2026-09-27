@@ -1,0 +1,8 @@
+---
+# Pre-existing SCOM RunAs account used to exercise distribution management.
+# This account must already exist in the SCOM environment before running the tests.
+# It is not created or deleted by the test suite.
+scom_test_dist_run_as_name: "AnsibleTestRunAsDistribution"
+scom_test_dist_resource_pool_ad: "AD Assignment Resource Pool"
+scom_test_dist_resource_pool_all: "All Management Servers Resource Pool"
+scom_test_dist_resource_pool_notifications: "Notifications Resource Pool"

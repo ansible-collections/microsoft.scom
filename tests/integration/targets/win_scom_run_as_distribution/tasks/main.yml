@@ -1,0 +1,211 @@
+---
+# Integration tests for microsoft.scom.run_as_distribution and run_as_distribution_info.
+#
+# Uses the pre-existing "AnsibleTestRunAsDistribution" RunAs account.
+# The account is never created or deleted — the ALWAYS block restores it to a
+# known baseline (more_secure with no targets) after each run.
+#
+# Phase overview:
+#   SETUP    - discover management server computer, normalize starting state
+#   PHASE 1  - less_secure (set, verify, idempotency)
+#   PHASE 2  - more_secure with single computer (check mode, set, verify, idempotency)
+#   PHASE 3  - append resource pools, override with single pool (set, verify)
+#   ALWAYS   - restore account to more_secure with no targets
+
+- name: Run the run_as_distribution and run_as_distribution_info integration test suite
+  block:
+
+    # =========================================================
+    # SETUP: discover a managed computer and normalize starting state
+    # =========================================================
+    - name: SETUP | discover the management server computer display name
+      ansible.windows.win_powershell:
+        script: |
+          Import-Module OperationsManager -ErrorAction SilentlyContinue
+          $ms = Get-SCOMManagementServer | Select-Object -First 1
+          $Ansible.Result.computer = $ms.DisplayName
+          $Ansible.Changed = $false
+      register: _ms
+
+    - name: SETUP | set target computer fact
+      ansible.builtin.set_fact:
+        scom_test_dist_computer: "{{ _ms.result.computer }}"
+
+    - name: SETUP | normalize account to more_secure with no targets
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers: []
+        append: false
+
+    # =========================================================
+    # PHASE 1: less_secure
+    # =========================================================
+    - name: PHASE 1 | set distribution to less_secure
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: less_secure
+      register: _phase1_less
+
+    - name: PHASE 1 | verify via info
+      microsoft.scom.run_as_distribution_info:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+      register: _phase1_info
+
+    - name: PHASE 1 | assert distribution set to less_secure
+      ansible.builtin.assert:
+        that:
+          - _phase1_less.changed == true
+          - _phase1_less.distribution.security_level == 'less_secure'
+          - _phase1_info.distributions | length == 1
+          - (_phase1_info.distributions | first).security_level == 'less_secure'
+          - (_phase1_info.distributions | first).computers | length == 0
+        fail_msg: "run_as_distribution did not set less_secure or info did not confirm it"
+
+    - name: PHASE 1 | set less_secure again (idempotency)
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: less_secure
+      register: _phase1_idem
+
+    - name: PHASE 1 | assert idempotent
+      ansible.builtin.assert:
+        that:
+          - _phase1_idem.changed == false
+        fail_msg: "run_as_distribution less_secure must be idempotent"
+
+    # =========================================================
+    # PHASE 2: more_secure with a single computer
+    # =========================================================
+    - name: PHASE 2 | set more_secure in check mode
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers:
+          - "{{ scom_test_dist_computer }}"
+      check_mode: true
+      register: _phase2_check
+
+    - name: PHASE 2 | verify check mode did not change the live distribution
+      microsoft.scom.run_as_distribution_info:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+      register: _phase2_check_info
+
+    - name: PHASE 2 | assert check mode reports changed and did not modify live distribution
+      ansible.builtin.assert:
+        that:
+          - _phase2_check.changed == true
+          - (_phase2_check_info.distributions | first).security_level == 'less_secure'
+        fail_msg: "check mode should report changed=true and must not modify the live distribution"
+
+    - name: PHASE 2 | set distribution to more_secure with the management server computer
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers:
+          - "{{ scom_test_dist_computer }}"
+      register: _phase2_more
+
+    - name: PHASE 2 | verify via info
+      microsoft.scom.run_as_distribution_info:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+      register: _phase2_info
+
+    - name: PHASE 2 | assert more_secure applied with the target computer
+      ansible.builtin.assert:
+        that:
+          - _phase2_more.changed == true
+          - _phase2_more.distribution.security_level == 'more_secure'
+          - scom_test_dist_computer in _phase2_more.distribution.computers
+          - (_phase2_info.distributions | first).security_level == 'more_secure'
+          - (_phase2_info.distributions | first).computers | length == 1
+          - scom_test_dist_computer in (_phase2_info.distributions | first).computers
+        fail_msg: "run_as_distribution did not apply more_secure or info did not confirm it"
+
+    - name: PHASE 2 | set same more_secure distribution again (idempotency)
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers:
+          - "{{ scom_test_dist_computer }}"
+      register: _phase2_idem
+
+    - name: PHASE 2 | assert idempotent
+      ansible.builtin.assert:
+        that:
+          - _phase2_idem.changed == false
+        fail_msg: "run_as_distribution more_secure must be idempotent"
+
+    # =========================================================
+    # PHASE 3: append resource pools, then override
+    # =========================================================
+
+    # 3a: append two resource pools to the existing computer
+    - name: PHASE 3 | append two resource pools to the existing computer
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers:
+          - "{{ scom_test_dist_resource_pool_ad }}"
+          - "{{ scom_test_dist_resource_pool_all }}"
+        append: true
+      register: _phase3_append
+
+    - name: PHASE 3 | verify via info after append
+      microsoft.scom.run_as_distribution_info:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+      register: _phase3_append_info
+
+    - name: PHASE 3 | assert append changed and preserved computer plus both pools
+      ansible.builtin.assert:
+        that:
+          - _phase3_append.changed == true
+          - _phase3_append.distribution.security_level == 'more_secure'
+          - scom_test_dist_computer in _phase3_append.distribution.computers
+          - scom_test_dist_resource_pool_ad in _phase3_append.distribution.computers
+          - scom_test_dist_resource_pool_all in _phase3_append.distribution.computers
+          - (_phase3_append_info.distributions | first).security_level == 'more_secure'
+          - (_phase3_append_info.distributions | first).computers | length == 3
+          - scom_test_dist_computer in (_phase3_append_info.distributions | first).computers
+          - scom_test_dist_resource_pool_ad in (_phase3_append_info.distributions | first).computers
+          - scom_test_dist_resource_pool_all in (_phase3_append_info.distributions | first).computers
+        fail_msg: "append did not add both pools while preserving the existing computer, or info did not confirm it"
+
+    # 3b: override entire distribution with a single notifications pool
+    - name: PHASE 3 | override distribution with notifications pool only (append false)
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers:
+          - "{{ scom_test_dist_resource_pool_notifications }}"
+        append: false
+      register: _phase3_override
+
+    - name: PHASE 3 | verify via info after override
+      microsoft.scom.run_as_distribution_info:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+      register: _phase3_override_info
+
+    - name: PHASE 3 | assert override replaced distribution with only notifications pool
+      ansible.builtin.assert:
+        that:
+          - _phase3_override.changed == true
+          - _phase3_override.distribution.security_level == 'more_secure'
+          - _phase3_override.distribution.computers | length == 1
+          - scom_test_dist_resource_pool_notifications in _phase3_override.distribution.computers
+          - (_phase3_override_info.distributions | first).security_level == 'more_secure'
+          - (_phase3_override_info.distributions | first).computers | length == 1
+          - scom_test_dist_resource_pool_notifications in (_phase3_override_info.distributions | first).computers
+        fail_msg: "override did not replace the distribution with only the notifications pool, or info did not confirm it"
+
+  always:
+    # =========================================================
+    # ALWAYS: restore account to more_secure with no targets
+    # =========================================================
+    - name: ALWAYS | restore account to more_secure with no targets
+      microsoft.scom.run_as_distribution:
+        run_as_account: "{{ scom_test_dist_run_as_name }}"
+        security_level: more_secure
+        computers: []
+        append: false
+      failed_when: false

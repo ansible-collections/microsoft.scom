@@ -1,0 +1,114 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: run_as_distribution
+  short_description: Manage the credential distribution policy of SCOM RunAs account.
+  description:
+    - Manages RunAs account distribution security policy.
+    - Manages RunAs account distribution targets.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    run_as_account:
+      description:
+        - The display name of the RunAs account whose distribution policy is managed.
+        - The name must resolve to exactly one RunAs account.
+        - Use M(microsoft.scom.run_as_distribution_info) to list RunAs accounts and their current distribution.
+      type: str
+      required: true
+    security_level:
+      description:
+        - C(less_secure) distributes the credential to all managed computers.
+        - C(more_secure) distributes the credential only to the computers listed in O(computers).
+      type: str
+      required: true
+      choices:
+        - less_secure
+        - more_secure
+    computers:
+      description:
+        - List of distribution targets that should be assigned to the RunAs account.
+        - Accepts both computer display names and resource pool display names.
+        - Required when O(append=false)
+        - Ignored when security_level is less_secure.
+        - When omitted or set to empty list [] with O(append=true) the existing distribution list is kept unchanged.
+        - When set to empty list [] with O(append=false) the distribution list is cleared.
+        - Use M(microsoft.scom.run_as_distribution_info) to retrieve the current list of targets.
+      type: list
+      elements: str
+      required: false
+      default: null
+    append:
+      description:
+        - When C(true) and O(security_level=more_secure), the entries in O(computers)
+          are merged into the existing distribution list.
+        - When C(false) and O(security_level=more_secure), the entries in O(computers)
+          replace the existing distribution list.
+        - Use C(false) with computers [] to explicitly clear all targets.
+        - Defaults to C(true) to prevent accidental data loss.
+      type: bool
+      required: false
+      default: true
+
+EXAMPLES: |
+  - name: Restrict a RunAs account to specific computers
+    microsoft.scom.run_as_distribution:
+      run_as_account: "Contoso SQL Monitoring Account"
+      security_level: more_secure
+      computers:
+        - "sql-01.contoso.com"
+        - "sql-02.contoso.com"
+      append: false
+
+  - name: Add another computer to an existing distribution list
+    microsoft.scom.run_as_distribution:
+      run_as_account: "Contoso SQL Monitoring Account"
+      security_level: more_secure
+      computers:
+        - "sql-03.contoso.com"
+
+  - name: Distribute a RunAs account to specific resource pools and computers
+    microsoft.scom.run_as_distribution:
+      run_as_account: "Contoso SNMP Account"
+      security_level: more_secure
+      computers:
+        - "All Management Servers Resource Pool"
+        - "AD Assignment Resource Pool"
+        - "Notifications Resource Pool"
+        - "sql-01.contoso.com"
+
+  - name: Distribute a RunAs account to all managed computers
+    microsoft.scom.run_as_distribution:
+      run_as_account: "Contoso SQL Monitoring Account"
+      security_level: less_secure
+
+  - name: Clear the distribution list of a RunAs account
+    microsoft.scom.run_as_distribution:
+      run_as_account: "Contoso SQL Monitoring Account"
+      security_level: more_secure
+      computers: []
+      append: false
+
+RETURN:
+  distribution:
+    description: The RunAs account distribution policy and targets.
+    returned: always
+    type: dict
+    contains:
+      run_as_account:
+        description: The display name of the RunAs account.
+        type: str
+      security_level:
+        description: The distribution security level (less_secure or more_secure).
+        type: str
+      computers:
+        description:
+          - The sorted list of distribution targets (computers and resource pools) the credential is distributed to.
+          - Empty when O(security_level=less_secure).
+        type: list
+        elements: str
