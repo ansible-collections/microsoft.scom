@@ -243,7 +243,7 @@
         domain: "{{ scom_test_run_as_domain }}"
         username: "{{ scom_test_run_as_username }}"
         password: "{{ scom_test_run_as_password_update }}"
-        update_password: true
+        update_credential: true
       register: _phase5_windows
 
     - name: PHASE 5 | assert windows credentials updated and GUID preserved
@@ -261,7 +261,7 @@
         name: "{{ scom_test_run_as_name }}"
         account_type: "{{ scom_test_run_as_account_type6 }}"
         binary_file_path: "{{ scom_test_run_as_binary_file_path_update }}"
-        update_password: true
+        update_credential: true
       register: _phase5_binary
 
     - name: PHASE 5 | assert binary_authentication credentials updated and GUID preserved
@@ -279,7 +279,7 @@
         name: "{{ scom_test_run_as_name }}"
         account_type: "{{ scom_test_run_as_account_type2 }}"
         community_string: "{{ scom_test_run_as_community_string_update }}"
-        update_password: true
+        update_credential: true
       register: _phase5_community
 
     - name: PHASE 5 | assert community_string credentials updated and GUID preserved
