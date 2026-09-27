@@ -211,13 +211,13 @@ RETURN:
       domain:
         description:
           - Domain of the stored credential.
-          - Populated for C(windows) and C(action_account) types; empty for others.
+          - Populated for C(windows) and C(action_account) account types; empty for others.
         type: str
       user_name:
         description:
           - User name of the stored credential.
           - Populated for C(windows), C(action_account), C(basic_authentication),
-            C(simple_authentication), and C(digest_authentication) types.
+            C(simple_authentication), and C(digest_authentication) account types.
         type: str
       account_type:
         description:
