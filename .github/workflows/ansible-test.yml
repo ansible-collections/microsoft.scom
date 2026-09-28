@@ -31,8 +31,12 @@ permissions:
 jobs:
   # Approve protected environment once instead of once per job in the matrix.
   # detect-changes depends on this so no PR code runs before a maintainer approves.
+  # Skipped for schedule/workflow_dispatch runs on the base branch (main) — no untrusted
+  # code is involved, so the approval gate is not needed. All other eco-scom environment
+  # restrictions (secrets scoping, deployment protection rules) remain in place.
   approve:
     name: Approve Integration
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     environment:
       name: eco-scom
@@ -46,6 +50,11 @@ jobs:
     name: Detect Changed Modules
     runs-on: ubuntu-latest
     needs: [approve]
+    if: >-
+      always() &&
+      (needs.approve.result == 'success' ||
+       github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch')
     outputs:
       cli_args: ${{ steps.targets.outputs.cli_args }}
       has_targets: ${{ steps.targets.outputs.has_targets }}
@@ -69,8 +78,8 @@ jobs:
             else
               TARGETS="ALL"
             fi
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            # Push to main/stable-* → always run ALL tests as safety net
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Scheduled run → always run ALL tests as safety net
             TARGETS="ALL"
           else
             # pull_request_target → selective based on changed files
@@ -186,10 +195,14 @@ jobs:
     needs:
       - approve
       - detect-changes
-    # Skip entirely when no relevant files changed
+    # Skip entirely when no relevant files changed.
+    # For schedule/workflow_dispatch the approve gate is intentionally skipped —
+    # use an explicit allowlist so any future trigger addition cannot silently bypass it.
     if: >-
       always() &&
-      needs.approve.result == 'success' &&
+      (needs.approve.result == 'success' ||
+       github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch') &&
       needs.detect-changes.outputs.has_targets == 'true'
     name: I (Ⓐ${{ matrix.ansible }}
     strategy:
