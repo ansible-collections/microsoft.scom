@@ -1,0 +1,8 @@
+---
+# Unique, clearly-identifiable display name so the throwaway test channel never
+# collides with a real notification channel in the SCOM environment.
+scom_test_channel_display_name: "Ansible Integration Test SMTP Channel"
+scom_test_channel_smtp_server: "smtp.integration.test.local"
+scom_test_channel_from: "scom-inttest@integration.test.local"
+scom_test_channel_subject: "SCOM Integration Test Alert"
+scom_test_channel_body: "Integration test body"
