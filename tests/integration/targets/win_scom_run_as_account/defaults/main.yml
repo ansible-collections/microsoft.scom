@@ -1,0 +1,22 @@
+---
+# Unique, clearly-identifiable name so the throwaway test account never collides
+# with a real RunAs account in the SCOM environment.
+scom_test_run_as_name: "Ansible Integration Test RunAs Account"
+scom_test_run_as_description: "Temporary account created by microsoft.scom integration tests"
+scom_test_run_as_username: "ansible-int-test"
+scom_test_run_as_username_update: "ansible-int-test-updated"
+scom_test_run_as_password: "S3cureP@ss-DoNotUse!" # notsecret
+scom_test_run_as_password_update: "S3cureP@ss-DoNotUse-Updated!" # notsecret
+scom_test_run_as_domain: "CONTOSO"
+scom_test_run_as_domain_update: "CONTOSO-Updated"
+scom_test_run_as_community_string: "public" # notsecret
+scom_test_run_as_community_string_update: "private" # notsecret
+scom_test_run_as_binary_file_path: "C:\\SCOM_Export\\binary_account.pem" # notsecret
+scom_test_run_as_binary_file_path_update: "C:\\SCOM_Export\\binary_account_update.pem" # notsecret
+scom_test_run_as_account_type1: windows
+scom_test_run_as_account_type2: community_string
+scom_test_run_as_account_type3: basic_authentication
+scom_test_run_as_account_type4: simple_authentication
+scom_test_run_as_account_type5: digest_authentication
+scom_test_run_as_account_type6: binary_authentication
+scom_test_run_as_account_type7: action_account

@@ -1,0 +1,236 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: run_as_account
+  short_description: Manage SCOM Run As Accounts.
+  description:
+    - Creates, Removes, and Updates Credentials of SCOM Run As Accounts.
+    - Supports 7 SCOM credential types.
+    - Existing account credentials can be updated with C(update_credential=true).
+    - Only one account C(name) per C(account_type) can be created.
+    - Passwords and community strings are never returned by the module.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    state:
+      description:
+        - C(present) creates the account if it does not exist, or updates its credentials
+          when C(update_credential=true).
+        - C(absent) removes the account. Supply either C(name) + C(account_type) or C(id).
+      type: str
+      required: false
+      default: present
+      choices:
+        - present
+        - absent
+    name:
+      description:
+        - Display name of the RunAs account.
+        - Mutually exclusive with C(id).
+        - Required together with C(account_type) when creating a new account.
+        - For C(state=present) with C(update_credential=true), the name must be unique;
+          if duplicates exist the module fails and instructs the user to use C(id) instead.
+        - For C(state=absent), the account is removed when exactly one match is found.
+          If duplicates exist the module fails and instructs the user to use C(id) instead.
+      type: str
+      required: false
+    id:
+      description:
+        - GUID of the RunAs account.
+        - Mutually exclusive with C(name).
+        - For C(state=present), used only for updating an existing account. Fails if not found.
+        - For C(state=absent), removes the account with that GUID.
+        - Obtain this value with the C(run_as_account_info) module.
+      type: str
+      required: false
+    account_type:
+      description:
+        - Credential type of the RunAs account.
+        - Required when C(state=present) or when C(name) is used with C(state=absent).
+        - Not required when C(id) is used with C(state=absent).
+        - Immutable once the account is created.
+        - Determines which credential parameters are required.
+        - C(windows) — requires C(username), C(password), C(domain).
+        - C(action_account) — requires C(username), C(password), C(domain).
+        - C(community_string) — requires C(community_string).
+        - C(basic_authentication) — requires C(username), C(password).
+        - C(simple_authentication) — requires C(username), C(password).
+        - C(digest_authentication) — requires C(username), C(password).
+        - C(binary_authentication) — requires C(binary_file_path).
+      type: str
+      required: false
+      choices:
+        - windows
+        - community_string
+        - basic_authentication
+        - simple_authentication
+        - digest_authentication
+        - binary_authentication
+        - action_account
+    description:
+      description:
+        - Free-text description for the RunAs account.
+        - Applied when the account is created and cannot be changed.
+      type: str
+      required: false
+    update_credential:
+      description:
+        - Whether to update the credential on existing accounts.
+        - When C(true) will always result in a change when executing the module.
+        - All credential parameters required by the C(account_type) must be supplied together.
+      type: bool
+      required: false
+      default: false
+    username:
+      description:
+        - User name for the credential.
+        - For C(account_type=windows) and C(account_type=action_account) this is the account name
+          without the domain (the domain is supplied separately via C(domain)).
+        - For C(account_type=basic_authentication), C(account_type=simple_authentication), and
+          C(account_type=digest_authentication) this is the full account name.
+        - Can be updated with C(update_credential=true).
+      type: str
+      required: false
+    password:
+      description:
+        - Password for the credential.
+        - Required for C(account_type=windows), C(account_type=action_account), C(account_type=basic_authentication),
+          C(account_type=simple_authentication), and C(account_type=digest_authentication).
+        - Can be updated with C(update_credential=true).
+        - Using Ansible Vault or an encrypted string is highly recommended when using real account secrets.
+      type: str
+      required: false
+    domain:
+      description:
+        - Windows domain for the credential.
+        - Required for C(account_type=windows) and C(account_type=action_account).
+        - For a local user account, the server's hostname can be specified as the domain.
+        - Can be updated with C(update_credential=true).
+      type: str
+      required: false
+    community_string:
+      description:
+        - SNMP community string.
+        - Required for C(account_type=community_string).
+        - Can be updated with C(update_credential=true).
+        - Using Ansible Vault or an encrypted string is highly recommended when using real account secrets.
+      type: str
+      required: false
+    binary_file_path:
+      description:
+        - Absolute path on the SCOM management server to the binary account file.
+        - Required for C(account_type=binary_authentication).
+        - Can be updated with C(update_credential=true).
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Create a Windows RunAs account
+    microsoft.scom.run_as_account:
+      state: present
+      name: "Contoso SQL Monitoring Account"
+      account_type: windows
+      domain: "CONTOSO"
+      username: "svc-sql-mon"
+      password: "{{ vault_sql_mon_password }}"
+      description: "Credential for SQL Server monitoring"
+    register: result
+
+  - name: Store the returned GUID for later use
+    ansible.builtin.set_fact:
+      sql_mon_guid: "{{ result.run_as_account.id }}"
+
+  - name: Update the Windows credential
+    microsoft.scom.run_as_account:
+      state: present
+      name: "Contoso SQL Monitoring Account"
+      account_type: windows
+      domain: "CONTOSO"
+      username: "svc-sql-mon"
+      password: "{{ vault_new_password }}"
+      update_credential: true
+
+  - name: Update a specific account by id when multiple accounts share the same name
+    microsoft.scom.run_as_account:
+      id: "{{ sql_mon_guid }}"
+      domain: "CONTOSO"
+      username: "svc-sql-mon"
+      password: "{{ vault_new_password }}"
+      update_credential: true
+
+  - name: Create a Community String RunAs account
+    microsoft.scom.run_as_account:
+      state: present
+      name: "Network Device SNMP Community"
+      account_type: community_string
+      community_string: "{{ vault_snmp_community }}"
+
+  - name: Create a Binary Authentication RunAs account
+    microsoft.scom.run_as_account:
+      state: present
+      name: "Binary Auth Account"
+      account_type: binary_authentication
+      binary_file_path: >-
+        C:\SCOM_Export\binary_account.pem
+
+  - name: Remove the RunAs account by GUID
+    microsoft.scom.run_as_account:
+      state: absent
+      id: "{{ sql_mon_guid }}"
+
+  - name: Remove the RunAs account by name and type (fails if duplicates exist)
+    microsoft.scom.run_as_account:
+      state: absent
+      name: "Contoso SQL Monitoring Account"
+      account_type: windows
+
+RETURN:
+  run_as_account:
+    description:
+      - Details of the RunAs account after applying changes.
+      - Returned when C(state=present) and the account was found or created.
+      - Not returned when C(state=absent).
+    returned: when C(state=present) and check mode is off.
+    type: dict
+    contains:
+      id:
+        description:
+          - Unique GUID of the RunAs account.
+        type: str
+      name:
+        description: Display name of the RunAs account.
+        type: str
+      description:
+        description: Description of the RunAs account.
+        type: str
+      domain:
+        description:
+          - Domain of the stored credential.
+          - Populated for C(windows) and C(action_account) account types; empty for others.
+        type: str
+      user_name:
+        description:
+          - User name of the stored credential.
+          - Populated for C(windows), C(action_account), C(basic_authentication),
+            C(simple_authentication), and C(digest_authentication) account types.
+        type: str
+      account_type:
+        description:
+          - SCOM internal class name of the credential type.
+          - Maps to the C(account_type) parameter as follows.
+          - C(SCOMWindowsCredentialSecureData) - C(windows).
+          - C(SCOMCommunityStringSecureData) - C(community_string).
+          - C(SCOMBasicCredentialSecureData) - C(basic_authentication).
+          - C(SCOMSimpleCredentialSecureData) - C(simple_authentication).
+          - C(SCOMDigestCredentialSecureData) - C(digest_authentication).
+          - C(SCOMGenericSecureData) - C(binary_authentication).
+          - C(SCOMActionAccountSecureData) - C(action_account).
+        type: str
+      last_modified:
+        description: Timestamp of the last modification (yyyy-MM-dd HH:mm:ss z).
+        type: str
