@@ -1,0 +1,267 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: notification_channel
+  short_description: Manage SCOM notification channels.
+  description:
+    - Creates or removes a SCOM notification channel used to deliver alert notifications.
+    - Supports SMTP (email), command, IM (instant message), and SMS channel types.
+    - Once created, a channel cannot be updated in place. To change its settings, remove
+      it with C(state=absent) and recreate it with C(state=present).
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    display_name:
+      description:
+        - The display name of the notification channel.
+        - Used as the identity for removal and to detect whether the channel already exists.
+      type: str
+      required: true
+    description:
+      description:
+        - A free-text description for the channel.
+      type: str
+      required: false
+    channel_type:
+      description:
+        - The type of notification channel to create.
+        - Required when C(state=present).
+      type: str
+      required: false
+      choices:
+        - smtp
+        - command
+        - sms
+        - im
+    state:
+      description:
+        - C(present) ensures the channel exists, creating it if necessary.
+        - C(absent) removes the channel if it exists.
+      type: str
+      required: false
+      default: present
+      choices:
+        - present
+        - absent
+    allow_duplicate_create:
+      description:
+        - When C(true), creates a new channel even if one with the same O(display_name) already exists.
+        - Use this when you intentionally want multiple channels with the same display name.
+        - When C(false), an existing channel with the same display name is left unchanged.
+        - Only applies when C(state=present).
+      type: bool
+      required: false
+      default: false
+    allow_duplicate_delete:
+      description:
+        - When C(true), removes all channels matching O(display_name) if multiple exist.
+        - When C(false), the module fails if more than one channel matches O(display_name),
+          preventing accidental bulk deletion.
+        - Only applies when C(state=absent).
+      type: bool
+      required: false
+      default: false
+    smtp_server:
+      description:
+        - The SMTP server host name.
+        - Required when C(channel_type=smtp) and the channel is being created.
+      type: str
+      required: false
+    smtp_port:
+      description:
+        - The SMTP server port. Defaults to the SCOM default (25) when omitted.
+      type: int
+      required: false
+    return_address:
+      description:
+        - The return (sender) address shown in the C(From:) header of notification emails.
+          Matches the C(Return address) field in the SCOM console.
+        - Required when C(channel_type=smtp) and the channel is being created.
+      type: str
+      required: false
+    subject:
+      description:
+        - The subject line template for SMTP notifications.
+      type: str
+      required: false
+    anonymous:
+      description:
+        - When C(true), the SMTP server accepts anonymous (unauthenticated) connections.
+        - When C(false), Windows Integrated Kerberos authentication is used.
+      type: bool
+      required: false
+      default: false
+    body_as_html:
+      description:
+        - Whether the SMTP message body is sent as HTML.
+      type: bool
+      required: false
+      default: false
+    backup_smtp_servers:
+      description:
+        - An ordered list of backup SMTP servers used when the primary server is unavailable.
+        - Added to O(smtp_server) when C(state=present).
+      type: list
+      elements: str
+      required: false
+      default: []
+    application_path:
+      description:
+        - The full path to the executable to run for a command channel.
+        - Required when C(channel_type=command) and the channel is being created.
+      type: str
+      required: false
+    argument:
+      description:
+        - The command-line arguments passed to the command channel executable.
+      type: str
+      required: false
+    working_directory:
+      description:
+        - The working directory for the command channel executable.
+      type: str
+      required: false
+    im_user:
+      description:
+        - The IM URI of the sending user (for example C(sip:scom@contoso.com)).
+        - Required when C(channel_type=im) and the channel is being created.
+      type: str
+      required: false
+    im_server:
+      description:
+        - The IM server host name.
+        - Required when C(channel_type=im) and the channel is being created.
+      type: str
+      required: false
+    im_port:
+      description:
+        - The IM server port.
+      type: int
+      required: false
+    im_authentication:
+      description:
+        - The SIP authentication protocol used by the IM channel.
+        - C(ntlm) uses Windows Integrated NTLM authentication (default).
+        - C(kerberos) uses Windows Integrated Kerberos authentication.
+      type: str
+      required: false
+      default: ntlm
+      choices:
+        - ntlm
+        - kerberos
+    im_protocol:
+      description:
+        - The SIP transport protocol used by the IM channel.
+        - C(tcp) uses plain TCP (default, port 5060).
+        - C(tls) uses TLS (default port 5061).
+      type: str
+      required: false
+      default: tcp
+      choices:
+        - tcp
+        - tls
+    body:
+      description:
+        - The message body template for SMTP, IM, and SMS channels.
+        - Required when C(channel_type) is C(smtp), C(im), or C(sms).
+        - Should not be empty for these channel types.
+      type: str
+      required: false
+    encoding:
+      description:
+        - The character encoding used for the message (for example C(utf-8)).
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Create an SMTP notification channel
+    microsoft.scom.notification_channel:
+      display_name: "Ops Email Channel"
+      description: "Email channel for operational alerts"
+      channel_type: smtp
+      smtp_server: "smtp.contoso.com"
+      smtp_port: 2525
+      return_address: "scom@contoso.com"
+      encoding: "US-ASCII"
+      backup_smtp_servers:
+        - "bck.server.com"
+      subject: "SCOM Alert: $Data/Context/DataItem/AlertName$"
+      body: "$Data/Context/DataItem/AlertDescription$"
+      body_as_html: true
+      anonymous: true
+
+  - name: Create a second SMTP channel with the same display name
+    microsoft.scom.notification_channel:
+      display_name: "Ops Email Channel"
+      channel_type: smtp
+      smtp_server: "smtp.contoso.com"
+      return_address: "scom@contoso.com"
+      body: "$Data/Context/DataItem/AlertDescription$"
+      allow_duplicate_create: true
+
+  - name: Create an IM (instant message) notification channel
+    microsoft.scom.notification_channel:
+      display_name: "Ops IM Channel"
+      description: "IM channel for operational alerts"
+      channel_type: im
+      im_user: "sip:scom@contoso.com"
+      im_server: "sipserver.contoso.com"
+      im_port: 5061
+      im_authentication: kerberos
+      im_protocol: tls
+      encoding: "utf-8"
+      body: "$Data/Context/DataItem/AlertName$"
+
+  - name: Create a Command notification channel
+    microsoft.scom.notification_channel:
+      display_name: "Run Remediation Script"
+      channel_type: command
+      application_path: 'C:\Scripts\remediate.cmd'
+      argument: "/alert:$Data/Context/DataItem/AlertId$"
+      working_directory: 'C:\Scripts'
+
+  - name: Create an SMS notification channel
+    microsoft.scom.notification_channel:
+      display_name: "Ops SMS Channel"
+      description: "SMS channel for critical alerts"
+      channel_type: sms
+      encoding: "Unicode"
+      body: "$Data/Context/DataItem/AlertName$"
+
+  - name: Remove a notification channel
+    microsoft.scom.notification_channel:
+      display_name: "Ops Email Channel"
+      state: absent
+
+  - name: Remove duplicated notification channels by display name
+    microsoft.scom.notification_channel:
+      display_name: "Ops Email Channel"
+      allow_duplicate_delete: true
+      state: absent
+
+RETURN:
+  channel:
+    description: The SCOM notification channel after applying changes. Not returned when C(state=absent).
+    returned: when C(state=present)
+    type: dict
+    contains:
+      display_name:
+        description: Display name of the channel.
+        type: str
+      channel_type:
+        description: The channel type (for example C(SMTP), C(Command), C(SMS)).
+        type: str
+      action:
+        description: The internal notification action identifier of the channel.
+        type: str
+      endpoint:
+        description: The internal notification endpoint identifier of the channel.
+        type: str
+      management_group:
+        description: The SCOM management group the channel belongs to.
+        type: str

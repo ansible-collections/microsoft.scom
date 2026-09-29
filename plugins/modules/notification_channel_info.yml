@@ -1,0 +1,55 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: notification_channel_info
+  short_description: Retrieve information about SCOM notification channels.
+  description:
+    - Returns the list of SCOM notification channels.
+    - Optionally filters channels by display name.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    display_name:
+      description:
+        - Restrict the results to the channel(s) with this display name.
+        - When omitted, all notification channels are returned.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get all notification channels
+    microsoft.scom.notification_channel_info:
+    register: all_channels
+
+  - name: Get notification channels by display name
+    microsoft.scom.notification_channel_info:
+      display_name: "Ops Email Channel"
+    register: email_channels
+
+RETURN:
+  channels:
+    description: The list of matching SCOM notification channels. Empty when none match.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      display_name:
+        description: Display name of the channel.
+        type: str
+      channel_type:
+        description: The channel type (for example C(SMTP), C(Command), C(SMS)).
+        type: str
+      action:
+        description: The internal notification action identifier of the channel.
+        type: str
+      endpoint:
+        description: The internal notification endpoint identifier of the channel.
+        type: str
+      management_group:
+        description: The SCOM management group the channel belongs to.
+        type: str

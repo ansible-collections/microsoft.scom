@@ -1,0 +1,189 @@
+---
+# Integration tests for microsoft.scom.notification_channel and notification_channel_info.
+#
+# A throwaway SMTP notification channel is created, verified, and removed. The channel
+# is always cleaned up so the SCOM environment is left untouched.
+
+- name: Integration test suite for notification_channel and notification_channel_info
+  block:
+    # =========================================================
+    # PRE-CLEANUP: remove any leftover test channel from a prior run
+    # =========================================================
+    - name: Pre-clean any leftover test notification channel
+      microsoft.scom.notification_channel:
+        display_name: "{{ scom_test_channel_display_name }}"
+        state: absent
+        allow_duplicate_delete: true
+      failed_when: false
+
+    # =========================================================
+    # PHASE 1: create - check mode
+    # =========================================================
+    - name: Create the SMTP channel in check mode
+      microsoft.scom.notification_channel: &channel_params
+        display_name: "{{ scom_test_channel_display_name }}"
+        channel_type: smtp
+        smtp_server: "{{ scom_test_channel_smtp_server }}"
+        return_address: "{{ scom_test_channel_from }}"
+        subject: "{{ scom_test_channel_subject }}"
+        body: "{{ scom_test_channel_body }}"
+      check_mode: true
+      register: _create_check
+
+    - name: Assert check mode reports changed
+      ansible.builtin.assert:
+        that:
+          - _create_check.changed == true
+        fail_msg: "notification_channel check mode should report changed=true for a new channel"
+
+    - name: Confirm check mode did not create the channel
+      microsoft.scom.notification_channel_info:
+        display_name: "{{ scom_test_channel_display_name }}"
+      register: _info_after_check
+
+    - name: Assert the channel does not exist after check mode
+      ansible.builtin.assert:
+        that:
+          - _info_after_check.channels | length == 0
+        fail_msg: "notification_channel check mode must not create the channel"
+
+    # =========================================================
+    # PHASE 2: create - real
+    # =========================================================
+    - name: Create the SMTP channel
+      microsoft.scom.notification_channel: *channel_params
+      register: _create
+
+    - name: Assert the channel was created
+      ansible.builtin.assert:
+        that:
+          - _create.changed == true
+          - _create.channel.display_name == scom_test_channel_display_name
+          - _create.channel.channel_type == 'Smtp'
+        fail_msg: "notification_channel did not create the channel correctly"
+
+    # =========================================================
+    # PHASE 3: idempotency
+    # =========================================================
+    - name: Create the same channel again (idempotency)
+      microsoft.scom.notification_channel: *channel_params
+      register: _create_idem
+
+    - name: Assert no change on repeat create
+      ansible.builtin.assert:
+        that:
+          - _create_idem.changed == false
+        fail_msg: "notification_channel must not change when the channel already exists"
+
+    # =========================================================
+    # PHASE 4: info
+    # =========================================================
+    - name: Get the channel via info
+      microsoft.scom.notification_channel_info:
+        display_name: "{{ scom_test_channel_display_name }}"
+      register: _info
+
+    - name: Assert info returns exactly one channel with expected fields
+      ansible.builtin.assert:
+        that:
+          - _info.changed == false
+          - _info.channels | length == 1
+          - (_info.channels | first).display_name == scom_test_channel_display_name
+          - (_info.channels | first).channel_type == 'Smtp'
+        fail_msg: "notification_channel_info did not return the expected channel"
+
+    # =========================================================
+    # PHASE 5: duplicate create
+    # =========================================================
+    - name: Create a duplicate channel with allow_duplicate_create=true
+      microsoft.scom.notification_channel:
+        <<: *channel_params
+        allow_duplicate_create: true
+      register: _create_dup
+
+    - name: Assert duplicate channel was created
+      ansible.builtin.assert:
+        that:
+          - _create_dup.changed == true
+        fail_msg: "notification_channel with allow_duplicate_create=true should create a new channel"
+
+    - name: Get channels via info after duplicate create
+      microsoft.scom.notification_channel_info:
+        display_name: "{{ scom_test_channel_display_name }}"
+      register: _info_dup
+
+    - name: Assert info returns 2 channels after duplicate create
+      ansible.builtin.assert:
+        that:
+          - _info_dup.channels | length == 2
+        fail_msg: >-
+          Expected 2 channels after allow_duplicate_create=true,
+          got {{ _info_dup.channels | length }}
+
+    # =========================================================
+    # PHASE 6: remove
+    # =========================================================
+    - name: Try to remove duplicate channels without allow_duplicate_delete (expect failure)
+      microsoft.scom.notification_channel:
+        display_name: "{{ scom_test_channel_display_name }}"
+        state: absent
+        allow_duplicate_delete: false
+      register: _remove_no_flag
+      ignore_errors: true
+
+    - name: Assert failure raised with correct message when allow_duplicate_delete is false
+      ansible.builtin.assert:
+        that:
+          - _remove_no_flag.failed == true
+          - "'allow_duplicate_delete' in _remove_no_flag.msg"
+        fail_msg: >-
+          Expected a failure mentioning allow_duplicate_delete when removing duplicate channels
+          without the flag. Got: {{ _remove_no_flag.msg | default('no msg') }}
+
+    - name: Remove all duplicate channels with allow_duplicate_delete=true
+      microsoft.scom.notification_channel:
+        display_name: "{{ scom_test_channel_display_name }}"
+        state: absent
+        allow_duplicate_delete: true
+      register: _remove_dup
+
+    - name: Assert all channels were removed
+      ansible.builtin.assert:
+        that:
+          - _remove_dup.changed == true
+        fail_msg: "notification_channel with allow_duplicate_delete=true should remove all channels"
+
+    - name: Remove channels again to verify idempotency when absent
+      microsoft.scom.notification_channel:
+        display_name: "{{ scom_test_channel_display_name }}"
+        state: absent
+        allow_duplicate_delete: true
+      register: _remove_idem
+
+    - name: Assert no change removing already-absent channels
+      ansible.builtin.assert:
+        that:
+          - _remove_idem.changed == false
+        fail_msg: "notification_channel absent must be idempotent"
+
+    - name: Confirm all channels are gone
+      microsoft.scom.notification_channel_info:
+        display_name: "{{ scom_test_channel_display_name }}"
+      register: _info_final
+
+    - name: Assert info shows no channels remaining
+      ansible.builtin.assert:
+        that:
+          - _info_final.channels | length == 0
+        fail_msg: "notification_channel_info still shows channels after full removal"
+
+  always:
+    # =========================================================
+    # ALWAYS: remove all test channels regardless of failures
+    # =========================================================
+    - name: Safety cleanup - remove all test notification channels
+      microsoft.scom.notification_channel:
+        display_name: "{{ scom_test_channel_display_name }}"
+        state: absent
+        allow_duplicate_delete: true
+      failed_when: false
