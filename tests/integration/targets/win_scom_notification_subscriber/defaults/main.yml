@@ -1,0 +1,8 @@
+---
+# Unique, clearly-identifiable name so the throwaway test subscriber never collides
+# with a real notification subscriber in the SCOM environment.
+scom_test_subscriber_name: "Ansible Integration Test Subscriber"
+scom_test_subscriber_address_primary: "ansible-inttest-primary@integration.test.local"
+scom_test_subscriber_address_smtp_explicit: "ansible-inttest-smtp@integration.test.local"
+scom_test_subscriber_address_sms: "2065550100"
+scom_test_subscriber_address_sip: "ansible-inttest-sip"

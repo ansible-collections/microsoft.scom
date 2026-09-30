@@ -1,0 +1,162 @@
+---
+# Integration tests for microsoft.scom.notification_subscriber and notification_subscriber_info.
+#
+# A throwaway notification subscriber with two email devices is created, verified, and
+# removed. The subscriber is always cleaned up so the SCOM environment is left untouched.
+
+- name: Integration test for notification_subscriber and notification_subscriber_info
+  block:
+    # =========================================================
+    # SETUP: pre-clean any leftover test subscriber
+    # =========================================================
+    - name: Pre-clean any leftover test subscriber
+      microsoft.scom.notification_subscriber:
+        name: "{{ scom_test_subscriber_name }}"
+        state: absent
+
+    # =========================================================
+    # PHASE 1: create - check mode
+    # =========================================================
+    - name: Create the subscriber in check mode
+      microsoft.scom.notification_subscriber: &subscriber_params
+        name: "{{ scom_test_subscriber_name }}"
+        devices:
+          - address: "{{ scom_test_subscriber_address_primary }}"
+            name: "Primary SMTP (default type)"
+          - address: "{{ scom_test_subscriber_address_smtp_explicit }}"
+            type: smtp
+            name: "Secondary SMTP (explicit type)"
+          - address: "{{ scom_test_subscriber_address_sms }}"
+            type: sms
+            name: "SMS device"
+          - address: "{{ scom_test_subscriber_address_sip }}"
+            type: sip
+            name: "SIP device"
+      check_mode: true
+      register: _create_check
+
+    - name: Confirm check mode did not create the subscriber
+      microsoft.scom.notification_subscriber_info:
+        name: "{{ scom_test_subscriber_name }}"
+      register: _info_after_check
+
+    - name: Assert check mode reported changed and did not create the subscriber
+      ansible.builtin.assert:
+        that:
+          - _create_check.changed == true
+          - _info_after_check.subscribers | length == 0
+        fail_msg: "notification_subscriber check mode should report changed=true and must not create the subscriber"
+
+    # =========================================================
+    # PHASE 2: create - real
+    # =========================================================
+    - name: Create the subscriber
+      microsoft.scom.notification_subscriber: *subscriber_params
+      register: _create
+
+    - name: Assert the subscriber was created with all four devices
+      ansible.builtin.assert:
+        that:
+          - _create.changed == true
+          - _create.subscriber.name == scom_test_subscriber_name
+          - _create.subscriber.devices | length == 4
+          - _create.subscriber.devices | selectattr('protocol', 'equalto', 'Smtp') | list | length == 2
+          - _create.subscriber.devices | selectattr('protocol', 'equalto', 'SMS') | list | length == 1
+        fail_msg: "notification_subscriber did not create the subscriber with all four devices correctly"
+
+    # =========================================================
+    # PHASE 3: idempotency
+    # =========================================================
+    - name: Create the same subscriber again (idempotency)
+      microsoft.scom.notification_subscriber: *subscriber_params
+      register: _create_idem
+
+    - name: Assert no change on repeat create
+      ansible.builtin.assert:
+        that:
+          - _create_idem.changed == false
+        fail_msg: "notification_subscriber must be idempotent when the subscriber already exists"
+
+    # =========================================================
+    # PHASE 4: info
+    # =========================================================
+    - name: Get the subscriber via info
+      microsoft.scom.notification_subscriber_info:
+        name: "{{ scom_test_subscriber_name }}"
+      register: _info
+
+    - name: Assert info returns the subscriber with expected fields
+      ansible.builtin.assert:
+        that:
+          - _info.changed == false
+          - _info.subscribers | length == 1
+          - (_info.subscribers | first).name == scom_test_subscriber_name
+          - (_info.subscribers | first).devices | length == 4
+        fail_msg: "notification_subscriber_info did not return the expected subscriber"
+
+    # =========================================================
+    # PHASE 5: remove
+    # =========================================================
+    - name: Remove the subscriber in check mode
+      microsoft.scom.notification_subscriber:
+        name: "{{ scom_test_subscriber_name }}"
+        state: absent
+      check_mode: true
+      register: _remove_check
+
+    - name: Confirm check mode did not remove the subscriber
+      microsoft.scom.notification_subscriber_info:
+        name: "{{ scom_test_subscriber_name }}"
+      register: _info_after_remove_check
+
+    - name: Assert check mode reported changed and did not remove the subscriber
+      ansible.builtin.assert:
+        that:
+          - _remove_check.changed == true
+          - _info_after_remove_check.subscribers | length == 1
+        fail_msg: "notification_subscriber check mode should report changed=true and must not remove the subscriber"
+
+    - name: Remove the subscriber
+      microsoft.scom.notification_subscriber:
+        name: "{{ scom_test_subscriber_name }}"
+        state: absent
+      register: _remove
+
+    - name: Assert the subscriber was removed
+      ansible.builtin.assert:
+        that:
+          - _remove.changed == true
+        fail_msg: "notification_subscriber did not remove the subscriber"
+
+    - name: Remove the subscriber again (idempotency)
+      microsoft.scom.notification_subscriber:
+        name: "{{ scom_test_subscriber_name }}"
+        state: absent
+      register: _remove_idem
+
+    - name: Assert no change removing an absent subscriber
+      ansible.builtin.assert:
+        that:
+          - _remove_idem.changed == false
+        fail_msg: "notification_subscriber absent must be idempotent"
+
+    - name: Confirm the subscriber is gone
+      microsoft.scom.notification_subscriber_info:
+        name: "{{ scom_test_subscriber_name }}"
+      register: _info_final
+
+    - name: Assert info shows the subscriber no longer exists
+      ansible.builtin.assert:
+        that:
+          - _info_final.subscribers | length == 0
+        fail_msg: "notification_subscriber_info still shows the test subscriber after removal"
+
+  always:
+    # =========================================================
+    # ALWAYS: remove the test subscriber regardless of failures
+    # =========================================================
+    - name: Safety cleanup - remove the test notification subscriber
+      microsoft.scom.notification_subscriber:
+        name: "{{ scom_test_subscriber_name }}"
+        state: absent
+      failed_when: false

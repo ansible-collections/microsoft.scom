@@ -1,0 +1,147 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: notification_subscriber
+  short_description: Manage SCOM notification subscribers.
+  description:
+    - Creates or Removes a SCOM notification subscriber (a notification recipient).
+    - Subscriber devices include E-Mail (SMTP), Text Message (SMS), and Instant Message (IM).
+    - After a subscriber is created it cannot be changed.
+    - To change subscriber's devices, remove the subscriber with C(state=absent) and recreate it with C(state=present).
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - The name of the notification subscriber.
+        - Used as the identity for creation and for removal.
+      type: str
+      required: true
+    devices:
+      description:
+        - The list of devices (addresses) that belong to the subscriber.
+        - Required when C(state=present).
+      type: list
+      elements: dict
+      required: false
+      default: []
+      suboptions:
+        address:
+          description:
+            - The device address.
+            - For C(smtp) provide a plain email address (for example C(user@contoso.com)).
+            - For C(sms) provide the phone number without a prefix (for example C(2065551212)).
+            - For C(sip) provide the SIP username without a prefix (for example C(SarahJ)).
+          type: str
+          required: true
+        type:
+          description:
+            - The device type, which determines the channel type and protocol.
+            - C(smtp) - E-Mail (SMTP).
+            - C(sms) - Text Message (SMS).
+            - C(sip) - Instant Message (IM).
+          type: str
+          required: false
+          default: smtp
+          choices:
+            - smtp
+            - sms
+            - sip
+        name:
+          description:
+            - A friendly name for the device.
+            - Defaults to the full SCOM address string when not provided.
+          type: str
+          required: false
+    state:
+      description:
+        - C(present) ensures the subscriber exists, creating it if necessary.
+        - C(absent) removes the subscriber if it exists.
+      type: str
+      required: false
+      default: present
+      choices:
+        - present
+        - absent
+
+EXAMPLES: |
+  - name: Create an email notification subscriber
+    microsoft.scom.notification_subscriber:
+      name: "Operations Team"
+      devices:
+        - address: "ops@contoso.com"
+          name: "Ops mailbox"
+
+  - name: Create a subscriber with multiple email devices
+    microsoft.scom.notification_subscriber:
+      name: "On-call Engineers"
+      devices:
+        - address: "primary@contoso.com"
+        - address: "secondary@contoso.com"
+
+  - name: Create a subscriber with an SMS device
+    microsoft.scom.notification_subscriber:
+      name: "Sarah Jones"
+      devices:
+        - address: "2065551212"
+          type: sms
+          name: "Sarah mobile"
+
+  - name: Create a subscriber with an instant message (SIP) device
+    microsoft.scom.notification_subscriber:
+      name: "Sarah Jones"
+      devices:
+        - address: "SarahJ"
+          type: sip
+          name: "Sarah IM"
+
+  - name: Create a subscriber with email, SMS, and SIP devices
+    microsoft.scom.notification_subscriber:
+      name: "Sarah Jones"
+      devices:
+        - address: "sarah.jones@contoso.com"
+          type: smtp
+          name: "Sarah email"
+        - address: "2065551212"
+          type: sms
+          name: "Sarah mobile"
+        - address: "SarahJ"
+          type: sip
+          name: "Sarah IM"
+
+  - name: Remove a notification subscriber
+    microsoft.scom.notification_subscriber:
+      name: "Operations Team"
+      state: absent
+
+RETURN:
+  subscriber:
+    description: The SCOM notification subscriber after applying changes. Not returned when C(state=absent).
+    returned: when C(state=present)
+    type: dict
+    contains:
+      name:
+        description: The name of the subscriber.
+        type: str
+      id:
+        description: The internal GUID of the subscriber.
+        type: str
+      devices:
+        description: The list of devices belonging to the subscriber.
+        type: list
+        elements: dict
+        contains:
+          name:
+            description: The device name.
+            type: str
+          protocol:
+            description: The protocol SCOM detected for the device (C(Smtp), C(SMS), or C(sip)).
+            type: str
+          address:
+            description: The device address.
+            type: str
