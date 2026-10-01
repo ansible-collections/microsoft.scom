@@ -1,0 +1,60 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: notification_subscriber_info
+  short_description: Retrieve information about SCOM notification subscribers.
+  description:
+    - Returns the list of SCOM notification subscribers (notification recipients).
+    - Optionally filters to a single subscriber by name.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - Restrict the result to the subscriber with this name.
+        - When omitted, all subscribers are returned.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get all notification subscribers
+    microsoft.scom.notification_subscriber_info:
+    register: all_subscribers
+
+  - name: Get a single notification subscriber by name
+    microsoft.scom.notification_subscriber_info:
+      name: "Operations Team"
+    register: ops_subscriber
+
+RETURN:
+  subscribers:
+    description: The list of notification subscribers. Empty when none match.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      name:
+        description: The name of the subscriber.
+        type: str
+      id:
+        description: The internal GUID of the subscriber.
+        type: str
+      devices:
+        description: The list of devices belonging to the subscriber.
+        type: list
+        elements: dict
+        contains:
+          name:
+            description: The device name.
+            type: str
+          protocol:
+            description: The protocol SCOM detected for the device (C(Smtp), C(SMS), or C(sip)).
+            type: str
+          address:
+            description: The device address.
+            type: str
