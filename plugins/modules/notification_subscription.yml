@@ -1,0 +1,319 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: notification_subscription
+  short_description: Manage SCOM notification subscriptions.
+  description:
+    - Creates or removes a SCOM alert notification subscription.
+    - A subscription routes alert notifications to one or more subscribers through one or
+      more notification channels.
+    - The referenced channels and subscribers must already exist. Create them first with
+      the M(microsoft.scom.notification_channel) and M(microsoft.scom.notification_subscriber)
+      modules.
+    - When a subscription already exists the following fields can be updated in place O(subscribers), O(cc_subscribers), and O(bcc_subscribers).
+    - Existing subscriptions can be enabled or disabled with O(enabled) parameter.
+    - O(channels) and O(criteria) cannot be changed on an existing subscription.
+    - A warning is emitted if the desired channels or criteria differ from the current ones;
+      remove the subscription with C(state=absent) and recreate it to change channels or criteria.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - The internal name of the subscription, used as the identity for idempotency.
+        - Must be a valid SCOM management pack identifier - it must start with a letter or
+          underscore and contain only letters, digits, underscores, and dots (no spaces).
+        - Use O(display_name) for a human-friendly label.
+      type: str
+      required: true
+    display_name:
+      description:
+        - The display name of the subscription.
+        - Defaults to the value of O(name) when not provided.
+      type: str
+      required: false
+    description:
+      description:
+        - A free-text description for the subscription.
+      type: str
+      required: false
+    channels:
+      description:
+        - The display names of the notification channels used to deliver notifications.
+        - Required when C(state=present) and the subscription does not yet exist.
+        - Cannot be changed once a subscription exists. A warning is emitted if the
+          desired list differs from the current channels; remove the subscription with
+          C(state=absent) and recreate it to change channels.
+        - Each channel must already exist.
+      type: list
+      elements: str
+      required: false
+      default: []
+    subscribers:
+      description:
+        - The names of the notification subscribers that receive notifications (the primary
+          or C(To) recipients).
+        - Required when C(state=present) and the subscription does not yet exist.
+        - When the subscription already exists and this list is non-empty, the module
+          compares it with the current subscribers and updates them in place if they differ.
+        - Leave unset (or empty) when only toggling O(enabled) on an existing subscription.
+        - Each subscriber must already exist.
+      type: list
+      elements: str
+      required: false
+      default: []
+    cc_subscribers:
+      description:
+        - The names of subscribers to add as carbon-copy (C(Cc)) recipients.
+        - When the subscription already exists and this list is non-empty, the module
+          compares it with the current Cc recipients and updates them in place if they differ.
+      type: list
+      elements: str
+      required: false
+      default: []
+    bcc_subscribers:
+      description:
+        - The names of subscribers to add as blind carbon-copy (C(Bcc)) recipients.
+        - When the subscription already exists and this list is non-empty, the module
+          compares it with the current Bcc recipients and updates them in place if they differ.
+      type: list
+      elements: str
+      required: false
+      default: []
+    criteria:
+      description:
+        - Structured alert filter applied when the subscription is created.
+        - Criteria cannot be changed on an existing subscription. A warning is emitted
+          if O(criteria) is specified for a subscription that already exists; remove it
+          with C(state=absent) and recreate it to apply new criteria.
+        - When omitted the subscription matches all alert changes.
+      type: dict
+      required: false
+      suboptions:
+        group_operator:
+          description:
+            - How multiple filters are combined.
+            - C(and) — all filters must match (default).
+            - C(or) — any filter must match.
+            - Ignored when O(criteria.filters) contains only one entry.
+          type: str
+          required: false
+          default: and
+          choices:
+            - and
+            - or
+        filters:
+          description:
+            - One or more alert property filters.
+          type: list
+          elements: dict
+          required: true
+          suboptions:
+            property:
+              description:
+                - The alert property to filter on.
+                - C(severity) — alert severity level.
+                - C(priority) — alert priority level.
+              type: str
+              required: true
+              choices:
+                - severity
+                - priority
+            operator:
+              description:
+                - Comparison operator applied between the property and the value.
+              type: str
+              required: true
+              choices:
+                - equal
+                - not_equal
+                - greater
+                - greater_equal
+                - less
+                - less_equal
+            value:
+              description:
+                - The value to compare against.
+                - Severity values — C(critical)=2, C(warning)=1, C(information)=0.
+                - Priority values — C(high)=2, C(medium)=1, C(low)=0.
+              type: str
+              required: true
+              choices:
+                - critical
+                - warning
+                - information
+                - high
+                - medium
+                - low
+    enabled:
+      description:
+        - Whether the subscription is enabled.
+        - When C(state=present) and the subscription already exists, the module enables or disables it to match this value.
+      type: bool
+      required: false
+      default: true
+    state:
+      description:
+        - C(present) ensures the subscription exists, creating it if necessary.
+        - C(absent) removes the subscription if it exists.
+      type: str
+      required: false
+      default: present
+      choices:
+        - present
+        - absent
+
+EXAMPLES: |
+  - name: Create a notification subscription
+    microsoft.scom.notification_subscription:
+      name: "CriticalAlertsToOps"
+      display_name: "Critical Alerts to Operations"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+
+  - name: Create a subscription filtered to Warning and Critical alerts only
+    microsoft.scom.notification_subscription:
+      name: "WarnCritAlertsToOps"
+      display_name: "Warning and Critical Alerts to Operations"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      criteria:
+        filters:
+          - property: severity
+            operator: greater
+            value: information
+
+  - name: Create a subscription filtered to Critical alerts only
+    microsoft.scom.notification_subscription:
+      name: "CriticalAlertsToOps"
+      display_name: "Critical Alerts to Operations"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      criteria:
+        filters:
+          - property: severity
+            operator: equal
+            value: critical
+
+  - name: Create a subscription filtered to Critical AND High-priority alerts
+    microsoft.scom.notification_subscription:
+      name: "CritHighPriorityAlerts"
+      display_name: "Critical High-Priority Alerts"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      criteria:
+        group_operator: and
+        filters:
+          - property: severity
+            operator: equal
+            value: critical
+          - property: priority
+            operator: equal
+            value: high
+
+  - name: Create a subscription for Warning OR Critical alerts
+    microsoft.scom.notification_subscription:
+      name: "WarnOrCritAlerts"
+      display_name: "Warning or Critical Alerts"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      criteria:
+        group_operator: or
+        filters:
+          - property: severity
+            operator: equal
+            value: warning
+          - property: severity
+            operator: equal
+            value: critical
+
+  - name: Create a disabled subscription with cc recipients
+    microsoft.scom.notification_subscription:
+      name: "WarningAlertsToOps"
+      display_name: "Warning Alerts to Operations"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      cc_subscribers:
+        - "On-call Engineers"
+      enabled: false
+
+  - name: Remove a notification subscription
+    microsoft.scom.notification_subscription:
+      name: "CriticalAlertsToOps"
+      state: absent
+
+  - name: Disable an existing subscription
+    microsoft.scom.notification_subscription:
+      name: "CriticalAlertsToOps"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      enabled: false
+
+  - name: Re-enable an existing subscription
+    microsoft.scom.notification_subscription:
+      name: "CriticalAlertsToOps"
+      channels:
+        - "Ops Email Channel"
+      subscribers:
+        - "Operations Team"
+      enabled: true
+
+RETURN:
+  subscription:
+    description: The SCOM notification subscription after applying changes.
+    returned: when C(state=present)
+    type: dict
+    contains:
+      name:
+        description: The internal name of the subscription.
+        type: str
+      display_name:
+        description: The display name of the subscription.
+        type: str
+      description:
+        description: The description of the subscription.
+        type: str
+      enabled:
+        description: Whether the subscription is enabled.
+        type: bool
+      id:
+        description: The internal GUID of the subscription.
+        type: str
+      channels:
+        description: The display names of the channels used by the subscription.
+        type: list
+        elements: str
+      subscribers:
+        description: The names of the primary (C(To)) subscribers.
+        type: list
+        elements: str
+      cc_subscribers:
+        description: The names of the carbon-copy (C(Cc)) subscribers.
+        type: list
+        elements: str
+      bcc_subscribers:
+        description: The names of the blind carbon-copy (C(Bcc)) subscribers.
+        type: list
+        elements: str
+      criteria:
+        description: The alert criteria expression for the subscription.
+        type: str
