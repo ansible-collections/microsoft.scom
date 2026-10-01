@@ -1,0 +1,13 @@
+---
+# Unique, clearly-identifiable name so the throwaway test subscription never collides
+# with a real notification subscription in the SCOM environment.
+scom_test_subscription_name: "AnsibleIntegrationTestSubscription"
+scom_test_subscription_display: "Ansible Integration Test Subscription"
+scom_test_subscription_channels:
+  - "AnsibleSubscription"
+  - "AnsibleSubscriptionSMS"
+scom_test_subscription_subscriber:
+  - "AnsibleSubscription"
+scom_test_subscription_subscriber_updated:
+  - "AnsibleSubscription"
+  - "On-call Engineers"
