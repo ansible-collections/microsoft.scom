@@ -79,14 +79,13 @@
         state: reject
       register: _reject
 
-    - name: Wait 5 seconds for the rejection to propagate
-      ansible.builtin.pause:
-        seconds: 5
-
-    - name: Query pending management to confirm the agent is no longer pending
+    - name: Wait for the rejection to propagate and agent to leave pending management
       microsoft.scom.pending_agent_request_info:
         agent_name: "{{ scom_test_agent_name }}"
       register: _info_after_reject
+      until: _info_after_reject.pending_agent_request | length == 0
+      retries: 12
+      delay: 5
 
     - name: Assert the agent was rejected and is absent from pending management
       ansible.builtin.assert:
@@ -158,14 +157,13 @@
         state: approve
       register: _approve
 
-    - name: Wait 5 seconds for the approval to propagate
-      ansible.builtin.pause:
-        seconds: 5
-
-    - name: Query pending management to confirm the agent is no longer pending
+    - name: Wait for the approval to propagate and agent to be approved
       microsoft.scom.pending_agent_request_info:
         agent_name: "{{ scom_test_agent_name }}"
       register: _info_after_approve
+      until: _info_after_approve.pending_agent_request | length == 0
+      retries: 12
+      delay: 5
 
     - name: Assert the agent was approved and is absent from pending management
       ansible.builtin.assert:

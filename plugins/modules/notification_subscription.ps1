@@ -16,17 +16,23 @@ Function Resolve-SCOMChannelObject {
 
     $resolved = [System.Collections.Generic.List[object]]::new()
     foreach ($channel_name in $channels) {
-        $channel = $null
+        $found = $null
         try {
-            $channel = Get-SCOMNotificationChannel -DisplayName $channel_name -ErrorAction SilentlyContinue
+            $found = @(Get-SCOMNotificationChannel -DisplayName $channel_name -ErrorAction SilentlyContinue)
         }
         catch {
             $module.FailJson("Failed to resolve notification channel '$channel_name': $($_.Exception.Message)", $_)
         }
-        if ($null -eq $channel) {
+        if ($null -eq $found -or $found.Count -eq 0) {
             $module.FailJson("Notification channel '$channel_name' was not found. Create it first with the notification_channel module.")
         }
-        $resolved.Add($channel)
+        if ($found.Count -gt 1) {
+            $module.FailJson(
+                "Notification channel name '$channel_name' is ambiguous — $($found.Count) channels share this display name. " +
+                "Rename the channels so each has a unique display name before referencing them in a subscription."
+            )
+        }
+        $resolved.Add($found[0])
     }
     return , $resolved.ToArray()
 }
@@ -40,17 +46,23 @@ Function Resolve-SCOMSubscriberObject {
 
     $resolved = [System.Collections.Generic.List[object]]::new()
     foreach ($subscriber_name in $subscribers) {
-        $subscriber = $null
+        $found = $null
         try {
-            $subscriber = Get-SCOMNotificationSubscriber -Name $subscriber_name -ErrorAction SilentlyContinue
+            $found = @(Get-SCOMNotificationSubscriber -Name $subscriber_name -ErrorAction SilentlyContinue)
         }
         catch {
             $module.FailJson("Failed to resolve notification subscriber '$subscriber_name': $($_.Exception.Message)", $_)
         }
-        if ($null -eq $subscriber) {
+        if ($null -eq $found -or $found.Count -eq 0) {
             $module.FailJson("Notification subscriber '$subscriber_name' was not found. Create it first with the notification_subscriber module.")
         }
-        $resolved.Add($subscriber)
+        if ($found.Count -gt 1) {
+            $module.FailJson(
+                "Notification subscriber name '$subscriber_name' is ambiguous — $($found.Count) subscribers share this name. " +
+                "Rename the subscribers so each has a unique name before referencing them in a subscription."
+            )
+        }
+        $resolved.Add($found[0])
     }
     return , $resolved.ToArray()
 }
@@ -63,7 +75,7 @@ Function Build-SCOMCriteriaXml {
     #>
     param(
         [Parameter(Mandatory = $true)][object[]]$filters,
-        [Parameter(Mandatory = $false)][string]$group_operator = "and"
+        [Parameter(Mandatory = $false)][string]$group_operator = $null
     )
 
     $value_map = @{
@@ -114,6 +126,10 @@ Function Build-SCOMCriteriaXml {
         return $simple_expressions[0]
     }
 
+    if ([string]::IsNullOrEmpty($group_operator)) {
+        throw "group_operator is required when multiple filters are specified. Use 'and' or 'or'."
+    }
+
     $logical_tag = if ($group_operator -eq "and") { "And" } else { "Or" }
     $xml = "<$logical_tag>"
     foreach ($expr in $simple_expressions) {
@@ -129,10 +145,8 @@ $spec = @{
         name = @{ type = "str"; required = $true }
         display_name = @{ type = "str"; required = $false; default = $null }
         description = @{ type = "str"; required = $false; default = $null }
-        channels = @{ type = "list"; elements = "str"; required = $false; default = @() }
-        subscribers = @{ type = "list"; elements = "str"; required = $false; default = @() }
-        cc_subscribers = @{ type = "list"; elements = "str"; required = $false; default = @() }
-        bcc_subscribers = @{ type = "list"; elements = "str"; required = $false; default = @() }
+        channels = @{ type = "list"; elements = "str"; required = $false; default = $null }
+        subscribers = @{ type = "list"; elements = "str"; required = $false; default = $null }
         criteria = @{
             type = "dict"
             required = $false
@@ -141,7 +155,7 @@ $spec = @{
                 group_operator = @{
                     type = "str"
                     required = $false
-                    default = "and"
+                    default = $null
                     choices = @("and", "or")
                 }
                 filters = @{
@@ -168,7 +182,7 @@ $spec = @{
                 }
             }
         }
-        enabled = @{ type = "bool"; required = $false; default = $true }
+        enabled = @{ type = "bool"; required = $false; default = $null }
         state = @{
             type = "str"
             required = $false
@@ -177,7 +191,7 @@ $spec = @{
         }
     }
     required_if = @(
-        , @("state", "present", @("channels", "subscribers"))
+        , @("state", "present", @("enabled"))
     )
     supports_check_mode = $true
 }
@@ -189,8 +203,6 @@ $display_name = if ($null -ne $module.Params.display_name) { $module.Params.disp
 $description = $module.Params.description
 $channels = $module.Params.channels
 $subscribers = $module.Params.subscribers
-$cc_subscribers = $module.Params.cc_subscribers
-$bcc_subscribers = $module.Params.bcc_subscribers
 $criteria = $module.Params.criteria
 $enabled = $module.Params.enabled
 $state = $module.Params.state
@@ -256,35 +268,23 @@ if ($null -ne $existing) {
     }
 
     $subscribers_differ = ($subscribers.Count -gt 0) -and
-        ($null -ne (Compare-Object ($current.subscribers | Sort-Object) ($subscribers | Sort-Object)))
-    $cc_differ = ($cc_subscribers.Count -gt 0) -and
-        ($null -ne (Compare-Object ($current.cc_subscribers | Sort-Object) ($cc_subscribers | Sort-Object)))
-    $bcc_differ = ($bcc_subscribers.Count -gt 0) -and
-        ($null -ne (Compare-Object ($current.bcc_subscribers | Sort-Object) ($bcc_subscribers | Sort-Object)))
-    $needs_subscriber_update = $subscribers_differ -or $cc_differ -or $bcc_differ
+        ($null -ne (Compare-Object @($current.subscribers | Sort-Object) @($subscribers | Sort-Object)))
+    $needs_subscriber_update = $subscribers_differ
 
     $enabled_differs = [bool]$existing.Enabled -ne $enabled
 
     if ($needs_subscriber_update -or $enabled_differs) {
+        # Validate subscriber names before committing changed=true.
+        if ($needs_subscriber_update) {
+            $sub_objects = Resolve-SCOMSubscriberObject -module $module -subscribers $subscribers
+        }
+
         $module.Result.changed = $true
         if (-not $module.CheckMode) {
             if ($needs_subscriber_update) {
                 try {
-                    if ($subscribers_differ) {
-                        $sub_objects = Resolve-SCOMSubscriberObject -module $module -subscribers $subscribers
-                        $existing.ToRecipients.Clear()
-                        foreach ($s in $sub_objects) { $existing.ToRecipients.Add($s) }
-                    }
-                    if ($cc_differ) {
-                        $cc_objects = Resolve-SCOMSubscriberObject -module $module -subscribers $cc_subscribers
-                        $existing.CcRecipients.Clear()
-                        foreach ($s in $cc_objects) { $existing.CcRecipients.Add($s) }
-                    }
-                    if ($bcc_differ) {
-                        $bcc_objects = Resolve-SCOMSubscriberObject -module $module -subscribers $bcc_subscribers
-                        $existing.BccRecipients.Clear()
-                        foreach ($s in $bcc_objects) { $existing.BccRecipients.Add($s) }
-                    }
+                    $existing.ToRecipients.Clear()
+                    foreach ($s in $sub_objects) { $existing.ToRecipients.Add($s) }
                     $existing.Update()
                 }
                 catch {
@@ -319,54 +319,61 @@ if ($null -ne $existing) {
     $module.Result.subscription = Format-NotificationSubscriptionResult -subscription $existing
     $module.ExitJson()
 }
+else {
+    # Subscription does not exist — validate create requirements before proceeding.
+    if ($null -eq $channels -or $channels.Count -eq 0) {
+        $module.FailJson("'channels' requires at least one entry when creating a new notification subscription.")
+    }
+    if ($null -eq $subscribers -or $subscribers.Count -eq 0) {
+        $module.FailJson("'subscribers' requires at least one entry when creating a new notification subscription.")
+    }
 
-$module.Result.changed = $true
-
-if (-not $module.CheckMode) {
+    # Resolve channels and subscribers and validate criteria before committing changed=true
+    # so that check mode accurately reflects whether the real run would succeed.
     $channel_objects = Resolve-SCOMChannelObject -module $module -channels $channels
     $subscriber_objects = Resolve-SCOMSubscriberObject -module $module -subscribers $subscribers
 
-    $add_arguments = @{
-        Name = $name
-        DisplayName = $display_name
-        Subscriber = $subscriber_objects
-        Channel = $channel_objects
-    }
-    if ($null -ne $description) { $add_arguments.Description = $description }
+    $criteria_xml = $null
     if ($null -ne $criteria) {
         try {
             $criteria_xml = Build-SCOMCriteriaXml -filters $criteria.filters -group_operator $criteria.group_operator
-            $add_arguments.Criteria = $criteria_xml
         }
         catch {
             $module.FailJson("Invalid criteria: $($_.Exception.Message)")
         }
     }
-    if (-not $enabled) { $add_arguments.Disabled = $true }
-    if ($cc_subscribers.Count -gt 0) {
-        $add_arguments.CcSubscriber = Resolve-SCOMSubscriberObject -module $module -subscribers $cc_subscribers
-    }
-    if ($bcc_subscribers.Count -gt 0) {
-        $add_arguments.BccSubscriber = Resolve-SCOMSubscriberObject -module $module -subscribers $bcc_subscribers
+
+    $module.Result.changed = $true
+
+    if (-not $module.CheckMode) {
+        $add_arguments = @{
+            Name = $name
+            DisplayName = $display_name
+            Subscriber = $subscriber_objects
+            Channel = $channel_objects
+        }
+        if ($null -ne $description) { $add_arguments.Description = $description }
+        if ($null -ne $criteria_xml) { $add_arguments.Criteria = $criteria_xml }
+        if (-not $enabled) { $add_arguments.Disabled = $true }
+
+        try {
+            $null = Add-SCOMNotificationSubscription @add_arguments -ErrorAction Stop
+        }
+        catch {
+            $module.FailJson("Failed to create SCOM notification subscription '$name': $($_.Exception.Message)", $_)
+        }
+
+        try {
+            $existing = Get-SCOMNotificationSubscription -Name $name -ErrorAction Stop
+        }
+        catch {
+            $module.Warn("Notification subscription was created but could not be re-fetched for result: $($_.Exception.Message)")
+        }
     }
 
-    try {
-        $null = Add-SCOMNotificationSubscription @add_arguments -ErrorAction Stop
-    }
-    catch {
-        $module.FailJson("Failed to create SCOM notification subscription '$name': $($_.Exception.Message)", $_)
+    if ($null -ne $existing) {
+        $module.Result.subscription = Format-NotificationSubscriptionResult -subscription $existing
     }
 
-    try {
-        $existing = Get-SCOMNotificationSubscription -Name $name -ErrorAction Stop
-    }
-    catch {
-        $module.Warn("Notification subscription was created but could not be re-fetched for result: $($_.Exception.Message)")
-    }
+    $module.ExitJson()
 }
-
-if ($null -ne $existing) {
-    $module.Result.subscription = Format-NotificationSubscriptionResult -subscription $existing
-}
-
-$module.ExitJson()

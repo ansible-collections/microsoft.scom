@@ -64,15 +64,7 @@ RETURN:
         type: list
         elements: str
       subscribers:
-        description: The names of the primary (C(To)) subscribers.
-        type: list
-        elements: str
-      cc_subscribers:
-        description: The names of the carbon-copy (C(Cc)) subscribers.
-        type: list
-        elements: str
-      bcc_subscribers:
-        description: The names of the blind carbon-copy (C(Bcc)) subscribers.
+        description: The names of the subscribers.
         type: list
         elements: str
       criteria:
