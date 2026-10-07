@@ -1,0 +1,597 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta content="2.27.0" name="antsibull-docs" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>microsoft.scom.notification_subscription module – Manage SCOM notification subscriptions. &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=b54c304f" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="microsoft.scom.notification_subscription_info module – Retrieve information about SCOM notification subscriptions." href="notification_subscription_info_module.html" />
+    <link rel="prev" title="microsoft.scom.notification_subscriber_info module – Retrieve information about SCOM notification subscribers." href="notification_subscriber_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Microsoft Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Microsoft.Scom</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#communication">Communication</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Microsoft Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Microsoft.Scom</a></li>
+      <li class="breadcrumb-item active">microsoft.scom.notification_subscription module – Manage SCOM notification subscriptions.</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ansible-collections/microsoft.scom/edit/main/plugins/modules/notification_subscription.yml?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-microsoft-scom-notification-subscription-module"></span><section id="microsoft-scom-notification-subscription-module-manage-scom-notification-subscriptions">
+<h1>microsoft.scom.notification_subscription module – Manage SCOM notification subscriptions.<a class="headerlink" href="#microsoft-scom-notification-subscription-module-manage-scom-notification-subscriptions" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/microsoft/scom/">microsoft.scom collection</a> (version 2.0.0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">microsoft.scom</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">microsoft.scom.notification_subscription</span></code>.</p>
+</div>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Creates or removes a SCOM alert notification subscription.</p></li>
+<li><p>A subscription routes alert notifications to one or more subscribers through one or more notification channels.</p></li>
+<li><p>The referenced channels and subscribers must already exist. Create them first with the <a class="reference internal" href="notification_channel_module.html#ansible-collections-microsoft-scom-notification-channel-module"><span class="std std-ref">microsoft.scom.notification_channel</span></a> and <a class="reference internal" href="notification_subscriber_module.html#ansible-collections-microsoft-scom-notification-subscriber-module"><span class="std std-ref">microsoft.scom.notification_subscriber</span></a> modules.</p></li>
+<li><p>When a subscription already exists the following fields can be updated in place <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-subscribers"><span class="std std-ref"><span class="pre">subscribers</span></span></a></strong></code>.</p></li>
+<li><p>Existing subscriptions can be enabled or disabled with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-enabled"><span class="std std-ref"><span class="pre">enabled</span></span></a></strong></code> parameter.</p></li>
+<li><p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-channels"><span class="std std-ref"><span class="pre">channels</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria"><span class="std std-ref"><span class="pre">criteria</span></span></a></strong></code> cannot be changed on an existing subscription.</p></li>
+<li><p>A warning is emitted if the desired channels or criteria differ from the current ones; remove the subscription with <code class="docutils literal notranslate"><span class="pre">state=absent</span></code> and recreate it to change channels or criteria.</p></li>
+</ul>
+</section>
+<section id="requirements">
+<span id="ansible-collections-microsoft-scom-notification-subscription-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>Must execute on the SCOM Management Server via WinRM</p></li>
+<li><p>SCOM Operations Console installed on the target host (provides the OperationsManager PowerShell module or the legacy Microsoft.EnterpriseManagement PSSnapins)</p></li>
+<li><p>SCOM 2012 R2, 2016, 2019, or 2022</p></li>
+<li><p>SCOM Operators role (minimum) for the executing account</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-channels"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-channels"><strong>channels</strong></p>
+<a class="ansibleOptionLink" href="#parameter-channels" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The display names of the notification channels used to deliver notifications.</p>
+<p>Required when creating a new subscription (<code class="docutils literal notranslate"><span class="pre">state=present</span></code> and the subscription does not yet exist).</p>
+<p>Cannot be changed once a subscription exists. A warning is emitted if the desired list differs from the current channels; remove the subscription with <code class="docutils literal notranslate"><span class="pre">state=absent</span></code> and recreate it to change channels.</p>
+<p>Each channel must already exist.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-criteria"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria"><strong>criteria</strong></p>
+<a class="ansibleOptionLink" href="#parameter-criteria" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Structured alert filter applied when the subscription is created.</p>
+<p>Criteria cannot be changed on an existing subscription. A warning is emitted if <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria"><span class="std std-ref"><span class="pre">criteria</span></span></a></strong></code> is specified for a subscription that already exists; remove it with <code class="docutils literal notranslate"><span class="pre">state=absent</span></code> and recreate it to apply new criteria.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-criteria/filters"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-filters"><strong>filters</strong></p>
+<a class="ansibleOptionLink" href="#parameter-criteria/filters" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>One or more alert property filters.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-criteria/filters/operator"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-filters-operator"><strong>operator</strong></p>
+<a class="ansibleOptionLink" href="#parameter-criteria/filters/operator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Comparison operator applied between the property and the value.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;equal&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;not_equal&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;greater&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;greater_equal&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;less&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;less_equal&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-criteria/filters/property"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-filters-property"><strong>property</strong></p>
+<a class="ansibleOptionLink" href="#parameter-criteria/filters/property" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The alert property to filter on.</p>
+<p><code class="docutils literal notranslate"><span class="pre">severity</span></code> — alert severity level.</p>
+<p><code class="docutils literal notranslate"><span class="pre">priority</span></code> — alert priority level.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;severity&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;priority&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-criteria/filters/value"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-filters-value"><strong>value</strong></p>
+<a class="ansibleOptionLink" href="#parameter-criteria/filters/value" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The value to compare against.</p>
+<p>Severity values — <code class="docutils literal notranslate"><span class="pre">critical</span></code>=2, <code class="docutils literal notranslate"><span class="pre">warning</span></code>=1, <code class="docutils literal notranslate"><span class="pre">information</span></code>=0.</p>
+<p>Priority values — <code class="docutils literal notranslate"><span class="pre">high</span></code>=2, <code class="docutils literal notranslate"><span class="pre">medium</span></code>=1, <code class="docutils literal notranslate"><span class="pre">low</span></code>=0.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;critical&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;warning&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;information&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;high&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;medium&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;low&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-criteria/group_operator"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-group-operator"><strong>group_operator</strong></p>
+<a class="ansibleOptionLink" href="#parameter-criteria/group_operator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>How multiple filters are combined. Required when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-filters"><span class="std std-ref"><span class="pre">criteria.filters</span></span></a></strong></code> contains more than one entry.</p>
+<p><code class="docutils literal notranslate"><span class="pre">and</span></code> — all filters must match.</p>
+<p><code class="docutils literal notranslate"><span class="pre">or</span></code> — any filter must match.</p>
+<p>Ignored when <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-criteria-filters"><span class="std std-ref"><span class="pre">criteria.filters</span></span></a></strong></code> contains only one entry.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;and&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;or&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-description"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A free-text description for the subscription.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-display_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-display-name"><strong>display_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-display_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The display name of the subscription.</p>
+<p>Defaults to the value of <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code> when not provided.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-enabled"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-enabled"><strong>enabled</strong></p>
+<a class="ansibleOptionLink" href="#parameter-enabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether the subscription is enabled.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">state=present</span></code> and the subscription already exists, the module enables or disables it to match this value.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The internal name of the subscription, used as the identity for idempotency.</p>
+<p>Must be a valid SCOM management pack identifier - it must start with a letter or underscore and contain only letters, digits, underscores, and dots (no spaces).</p>
+<p>Use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-display-name"><span class="std std-ref"><span class="pre">display_name</span></span></a></strong></code> for a human-friendly label.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">present</span></code> ensures the subscription exists, creating it if necessary.</p>
+<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> removes the subscription if it exists.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-subscribers"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-parameter-subscribers"><strong>subscribers</strong></p>
+<a class="ansibleOptionLink" href="#parameter-subscribers" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The names of the notification subscribers that receive notifications.</p>
+<p>Required when creating a new subscription (<code class="docutils literal notranslate"><span class="pre">state=present</span></code> and the subscription does not yet exist).</p>
+<p>When the subscription already exists and this list is non-empty, the module compares it with the current subscribers and updates them in place if they differ.</p>
+<p>Leave unset when only toggling <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-microsoft-scom-notification-subscription-module-parameter-enabled"><span class="std std-ref"><span class="pre">enabled</span></span></a></strong></code> on an existing subscription.</p>
+<p>Each subscriber must already exist.</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>These modules must run directly on the SCOM Management Server via WinRM. The OperationsManager PowerShell module is only installed on hosts where the SCOM Operations Console has been installed, and the SDK auto-connects to the local Management Group on import. Running on any other Windows host will fail.</p></li>
+<li><p>Supported SCOM versions: 2012 R2, 2016, 2019, 2022.</p></li>
+<li><p>The account executing this module must hold at minimum the SCOM Operators role on the Management Group. Administrative operations (e.g. importing management packs) require the SCOM Administrators role.</p></li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a notification subscription</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"CriticalAlertsToOps"</span>
+<span class="w">    </span><span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Critical</span><span class="nv"> </span><span class="s">Alerts</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">Operations"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a subscription filtered to Warning and Critical alerts only</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"WarnCritAlertsToOps"</span>
+<span class="w">    </span><span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Warning</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">Critical</span><span class="nv"> </span><span class="s">Alerts</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">Operations"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">criteria</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">filters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">severity</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">greater</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">information</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a subscription filtered to Critical alerts only</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"CriticalAlertsToOps"</span>
+<span class="w">    </span><span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Critical</span><span class="nv"> </span><span class="s">Alerts</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">Operations"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">criteria</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">filters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">severity</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">equal</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a subscription filtered to Critical AND High-priority alerts</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"CritHighPriorityAlerts"</span>
+<span class="w">    </span><span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Critical</span><span class="nv"> </span><span class="s">High-Priority</span><span class="nv"> </span><span class="s">Alerts"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">criteria</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">group_operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">and</span>
+<span class="w">      </span><span class="nt">filters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">severity</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">equal</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">priority</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">equal</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a subscription for Warning OR Critical alerts</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"WarnOrCritAlerts"</span>
+<span class="w">    </span><span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Warning</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">Critical</span><span class="nv"> </span><span class="s">Alerts"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">criteria</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">group_operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">or</span>
+<span class="w">      </span><span class="nt">filters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">severity</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">equal</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warning</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">severity</span>
+<span class="w">          </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">equal</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a disabled subscription</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"WarningAlertsToOps"</span>
+<span class="w">    </span><span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">"Warning</span><span class="nv"> </span><span class="s">Alerts</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">Operations"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"On-call</span><span class="nv"> </span><span class="s">Engineers"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove a notification subscription</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"CriticalAlertsToOps"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disable an existing subscription</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"CriticalAlertsToOps"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Re-enable an existing subscription</span>
+<span class="w">  </span><span class="nt">microsoft.scom.notification_subscription</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"CriticalAlertsToOps"</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Ops</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Channel"</span>
+<span class="w">    </span><span class="nt">subscribers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Operations</span><span class="nv"> </span><span class="s">Team"</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/projects/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible devel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription"><strong>subscription</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The SCOM notification subscription after applying changes.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">state=present</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/channels"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-channels"><strong>channels</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/channels" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The display names of the channels used by the subscription.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/criteria"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-criteria"><strong>criteria</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/criteria" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The alert criteria expression for the subscription.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/description"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The description of the subscription.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/display_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-display-name"><strong>display_name</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/display_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The display name of the subscription.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/enabled"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-enabled"><strong>enabled</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/enabled" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the subscription is enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The internal GUID of the subscription.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The internal name of the subscription.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-subscription/subscribers"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-notification-subscription-module-return-subscription-subscribers"><strong>subscribers</strong></p>
+<a class="ansibleOptionLink" href="#return-subscription/subscribers" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The names of the subscribers.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Shahar Golshani (&#64;shahargolshani)</p></li>
+<li><p>Ansible Ecosystem Engineering team (&#64;eco-ansible-content)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom/issues" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom/issues/new/choose" rel="noopener external" target="_blank">Report an issue</a></span></li>
+<li><span><a class="reference internal" href="index.html#communication-for-microsoft-scom"><span class="std std-ref">Communication</span></a></span></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="notification_subscriber_info_module.html" class="btn btn-neutral float-left" title="microsoft.scom.notification_subscriber_info module – Retrieve information about SCOM notification subscribers." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="notification_subscription_info_module.html" class="btn btn-neutral float-right" title="microsoft.scom.notification_subscription_info module – Retrieve information about SCOM notification subscriptions." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
