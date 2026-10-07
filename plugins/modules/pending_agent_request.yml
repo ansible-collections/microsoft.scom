@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: pending_agent_request
+  version_added: "2.0.0"
   short_description: Approve or Reject SCOM manual agent management requests.
   description:
     - Approves or denies SCOM agents that are awaiting manual approval.

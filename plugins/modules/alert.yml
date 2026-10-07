@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: alert
+  version_added: "2.0.0"
   short_description: Manage the state of a SCOM alert.
   description:
     - Updates the properties or resolution state of an existing SCOM alert identified by its GUID.

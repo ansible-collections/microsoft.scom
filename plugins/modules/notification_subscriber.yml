@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: notification_subscriber
+  version_added: "2.0.0"
   short_description: Manage SCOM notification subscribers.
   description:
     - Creates or Removes a SCOM notification subscriber (a notification recipient).

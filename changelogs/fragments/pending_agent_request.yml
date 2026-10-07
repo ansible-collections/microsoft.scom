@@ -1,4 +1,0 @@
----
-minor_changes:
-  - pending_agent_request - new module to approve or deny SCOM agents awaiting manual management approval, optionally scoped to a single agent.
-  - pending_agent_request_info - new module to retrieve SCOM pending agent management requests, optionally filtered by agent name.

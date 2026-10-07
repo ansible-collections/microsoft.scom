@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: run_as_distribution_info
+  version_added: "2.0.0"
   short_description: Retrieve the credential distribution policy of SCOM RunAs accounts.
   description:
     - Returns the distribution security policy (security level and targets) for one or all SCOM RunAs accounts.

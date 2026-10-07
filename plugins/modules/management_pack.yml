@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: management_pack
+  version_added: "2.0.0"
   short_description: Import or remove SCOM management packs.
   description:
     - Imports a SCOM management pack from a file, or removes an installed management pack.

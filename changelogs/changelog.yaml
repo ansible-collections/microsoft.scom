@@ -5,7 +5,7 @@ releases:
       release_summary: First release of the microsoft.scom collection
     fragments:
       - release-summary.yml
-    release_date: "2025-11-04"
+    release_date: '2025-11-04'
   1.0.1:
     changes:
       minor_changes:
@@ -17,4 +17,83 @@ releases:
         - scom_plugin - improved logging configuration for CLI testing.
     fragments:
       - scom-plugin-code-quality.yml
-    release_date: "2025-11-13"
+    release_date: '2025-11-13'
+  2.0.0:
+    changes:
+      major_changes:
+        - "Introduce the Microsoft SCOM Ansible Collection \u2014 a centralised automation
+          framework for Microsoft System Center Operations Manager. All modules share
+          a unified connection and credential validation layer, ensuring consistent
+          behaviour and a predictable experience across every SCOM operation.\n"
+      release_summary: 11 New modules for the Microsoft SCOM Ansible Collection
+    fragments:
+      - collection-baseline.yml
+      - release-summary.yml
+    modules:
+      - description: Manage the state of a SCOM alert.
+        name: alert
+        namespace: ''
+      - description: Retrieve information about SCOM alerts.
+        name: alert_info
+        namespace: ''
+      - description: Manage SCOM groups with explicit membership.
+        name: group
+        namespace: ''
+      - description: Retrieve information about SCOM groups.
+        name: group_info
+        namespace: ''
+      - description: Manage SCOM maintenance schedules.
+        name: maintenance_schedule
+        namespace: ''
+      - description: Retrieve information about SCOM maintenance schedules.
+        name: maintenance_schedule_info
+        namespace: ''
+      - description: Import or remove SCOM management packs.
+        name: management_pack
+        namespace: ''
+      - description: Retrieve information about installed SCOM management packs.
+        name: management_pack_info
+        namespace: ''
+      - description: Manage SCOM monitor overrides.
+        name: monitor_override
+        namespace: ''
+      - description: Retrieve SCOM monitors and their overrides by Monitor ID, Display Name, or Target Class.
+        name: monitor_override_info
+        namespace: ''
+      - description: Manage SCOM notification channels.
+        name: notification_channel
+        namespace: ''
+      - description: Retrieve information about SCOM notification channels.
+        name: notification_channel_info
+        namespace: ''
+      - description: Manage SCOM notification subscribers.
+        name: notification_subscriber
+        namespace: ''
+      - description: Retrieve information about SCOM notification subscribers.
+        name: notification_subscriber_info
+        namespace: ''
+      - description: Manage SCOM notification subscriptions.
+        name: notification_subscription
+        namespace: ''
+      - description: Retrieve information about SCOM notification subscriptions.
+        name: notification_subscription_info
+        namespace: ''
+      - description: Approve or Reject SCOM manual agent management requests.
+        name: pending_agent_request
+        namespace: ''
+      - description: Retrieve information about SCOM pending agent management requests.
+        name: pending_agent_request_info
+        namespace: ''
+      - description: Manage SCOM Run As Accounts.
+        name: run_as_account
+        namespace: ''
+      - description: Retrieve information about SCOM RunAs accounts.
+        name: run_as_account_info
+        namespace: ''
+      - description: Manage the credential distribution policy of SCOM RunAs account.
+        name: run_as_distribution
+        namespace: ''
+      - description: Retrieve the credential distribution policy of SCOM RunAs accounts.
+        name: run_as_distribution_info
+        namespace: ''
+    release_date: '2026-10-07'

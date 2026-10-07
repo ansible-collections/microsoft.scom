@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: management_pack_info
+  version_added: "2.0.0"
   short_description: Retrieve information about installed SCOM management packs.
   description:
     - Returns a list of installed SCOM management packs, optionally filtered by

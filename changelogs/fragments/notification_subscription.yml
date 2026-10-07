@@ -1,4 +1,0 @@
----
-minor_changes:
-  - notification_subscription - new module to manage SCOM notification subscriptions that route alerts to subscribers through channels.
-  - notification_subscription_info - new module to retrieve information about SCOM notification subscriptions.

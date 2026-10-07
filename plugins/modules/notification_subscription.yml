@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: notification_subscription
+  version_added: "2.0.0"
   short_description: Manage SCOM notification subscriptions.
   description:
     - Creates or removes a SCOM alert notification subscription.

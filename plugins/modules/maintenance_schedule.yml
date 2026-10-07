@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: maintenance_schedule
+  version_added: "2.0.0"
   short_description: Manage SCOM maintenance schedules.
   description:
     - Creates, updates, or removes an SCOM maintenance schedule that automatically places

@@ -1,4 +1,0 @@
----
-minor_changes:
-  - management_pack - new module to import and remove SCOM management packs, treating monitoring configuration as code.
-  - management_pack_info - new module to retrieve information about installed SCOM management packs.

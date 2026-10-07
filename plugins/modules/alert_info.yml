@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: alert_info
+  version_added: "2.0.0"
   short_description: Retrieve information about SCOM alerts.
   description:
     - Returns a list of SCOM alerts matching the specified filter criteria.
