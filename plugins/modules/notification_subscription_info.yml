@@ -1,0 +1,72 @@
+---
+# Copyright: (c) 2026, Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+DOCUMENTATION:
+  module: notification_subscription_info
+  short_description: Retrieve information about SCOM notification subscriptions.
+  description:
+    - Returns the list of SCOM alert notification subscriptions.
+    - Optionally filters to a single subscription by internal name or display name.
+  author:
+    - Shahar Golshani (@shahargolshani)
+    - Ansible Ecosystem Engineering team (@eco-ansible-content)
+  extends_documentation_fragment:
+    - microsoft.scom.uses_scom_ps_module
+  options:
+    name:
+      description:
+        - Restrict the result to the subscription with this internal name.
+        - Takes precedence over O(display_name) when both are provided.
+        - When both O(name) and O(display_name) are omitted, all subscriptions are returned.
+      type: str
+      required: false
+    display_name:
+      description:
+        - Restrict the result to the subscription with this display name.
+      type: str
+      required: false
+
+EXAMPLES: |
+  - name: Get all notification subscriptions
+    microsoft.scom.notification_subscription_info:
+    register: all_subscriptions
+
+  - name: Get a single notification subscription by name
+    microsoft.scom.notification_subscription_info:
+      name: "CriticalAlertsToOps"
+    register: critical_subscription
+
+RETURN:
+  subscriptions:
+    description: The list of notification subscriptions. Empty when none match.
+    returned: always
+    type: list
+    elements: dict
+    contains:
+      name:
+        description: The internal name of the subscription.
+        type: str
+      display_name:
+        description: The display name of the subscription.
+        type: str
+      description:
+        description: The description of the subscription.
+        type: str
+      enabled:
+        description: Whether the subscription is enabled.
+        type: bool
+      id:
+        description: The internal GUID of the subscription.
+        type: str
+      channels:
+        description: The display names of the channels used by the subscription.
+        type: list
+        elements: str
+      subscribers:
+        description: The names of the subscribers.
+        type: list
+        elements: str
+      criteria:
+        description: The alert criteria expression for the subscription.
+        type: str

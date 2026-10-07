@@ -262,8 +262,6 @@ Function Format-NotificationSubscriptionResult {
         id = if ($null -ne $subscription.Id) { $subscription.Id.ToString() } else { "" }
         channels = $channels.ToArray()
         subscribers = & $recipient_names $subscription.ToRecipients
-        cc_subscribers = & $recipient_names $subscription.CcRecipients
-        bcc_subscribers = & $recipient_names $subscription.BccRecipients
         criteria = $criteria
     }
 }

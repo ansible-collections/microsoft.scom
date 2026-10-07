@@ -1,0 +1,475 @@
+---
+# Integration tests for microsoft.scom.notification_subscription and
+# notification_subscription_info.
+#
+# Uses the pre-existing channels (AnsibleSubscription, AnsibleSubscriptionSMS) and
+# subscriber (AnsibleSubscription) — these objects are not created or removed by this
+# test. Only the test subscription itself is created and cleaned up.
+#
+# The &subscription_params anchor is defined in PHASE 1 and reused in PHASE 2
+# and PHASE 3 to avoid repeating the full parameter set.
+
+- name: Integration test for notification_subscription and notification_subscription_info
+  block:
+    # =========================================================
+    # SETUP: pre-clean any leftover test subscription
+    # =========================================================
+    - name: Pre-clean any leftover test subscription
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        state: absent
+
+    # =========================================================
+    # PHASE 0: negative tests
+    # =========================================================
+    - name: Attempt to create a subscription with an invalid (spaced) name
+      microsoft.scom.notification_subscription:
+        name: "Invalid Name With Spaces"
+        channels: "{{ scom_test_subscription_channels }}"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+      register: _bad_name
+      ignore_errors: true
+
+    - name: Assert the invalid name was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _bad_name.failed == true
+          - "'not a valid SCOM internal name' in _bad_name.msg"
+        fail_msg: "notification_subscription should reject a name containing spaces"
+
+    - name: Attempt to create a subscription with a non-existent channel
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels:
+          - "NonExistentChannel_DoesNotExist"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+      register: _bad_channel
+      ignore_errors: true
+
+    - name: Assert the non-existent channel was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _bad_channel.failed == true
+          - "'NonExistentChannel_DoesNotExist' in _bad_channel.msg"
+          - "'was not found' in _bad_channel.msg"
+        fail_msg: "notification_subscription should fail when a referenced channel does not exist"
+
+    - name: Attempt to create a subscription with a non-existent subscriber
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels: "{{ scom_test_subscription_channels }}"
+        subscribers:
+          - "NonExistentSubscriber_DoesNotExist"
+        enabled: true
+      register: _bad_subscriber
+      ignore_errors: true
+
+    - name: Assert the non-existent subscriber was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _bad_subscriber.failed == true
+          - "'NonExistentSubscriber_DoesNotExist' in _bad_subscriber.msg"
+          - "'was not found' in _bad_subscriber.msg"
+        fail_msg: "notification_subscription should fail when a referenced subscriber does not exist"
+
+    - name: Attempt to create a subscription without channels
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+      register: _missing_channels
+      ignore_errors: true
+
+    - name: Assert missing channels was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _missing_channels.failed == true
+          - "'channels' in _missing_channels.msg"
+        fail_msg: "notification_subscription should fail when channels is omitted for a new subscription"
+
+    - name: Attempt to create a subscription with an empty channels list
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels: []
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+      register: _empty_channels
+      ignore_errors: true
+
+    - name: Assert empty channels list was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _empty_channels.failed == true
+          - "'channels' in _empty_channels.msg"
+        fail_msg: "notification_subscription should fail when channels is an empty list for a new subscription"
+
+    - name: Attempt to create a subscription without subscribers
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels: "{{ scom_test_subscription_channels }}"
+        enabled: true
+      register: _missing_subscribers
+      ignore_errors: true
+
+    - name: Assert missing subscribers was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _missing_subscribers.failed == true
+          - "'subscribers' in _missing_subscribers.msg"
+        fail_msg: "notification_subscription should fail when subscribers is omitted for a new subscription"
+
+    - name: Attempt to create a subscription with an empty subscribers list
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels: "{{ scom_test_subscription_channels }}"
+        subscribers: []
+        enabled: true
+      register: _empty_subscribers
+      ignore_errors: true
+
+    - name: Assert empty subscribers list was rejected with a clear error
+      ansible.builtin.assert:
+        that:
+          - _empty_subscribers.failed == true
+          - "'subscribers' in _empty_subscribers.msg"
+        fail_msg: "notification_subscription should fail when subscribers is an empty list for a new subscription"
+
+    # =========================================================
+    # PHASE 1: create - check mode
+    # =========================================================
+
+    # Negative check-mode: invalid criteria value should fail even in check mode
+    - name: Attempt to create a subscription with an invalid criteria value in check mode
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels: "{{ scom_test_subscription_channels }}"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+        criteria:
+          filters:
+            - property: severity
+              operator: not_equal
+              value: high
+      check_mode: true
+      register: _bad_criteria_check
+      ignore_errors: true
+
+    - name: Assert invalid criteria value was rejected in check mode
+      ansible.builtin.assert:
+        that:
+          - _bad_criteria_check.failed == true
+          - "'high' in _bad_criteria_check.msg"
+        fail_msg: "notification_subscription should fail with invalid criteria value even in check mode"
+
+    # Negative check-mode: multiple filters without group_operator should fail even in check mode
+    - name: Attempt to create a subscription with multiple filters and no group_operator in check mode
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels: "{{ scom_test_subscription_channels }}"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+        criteria:
+          filters:
+            - property: severity
+              operator: equal
+              value: critical
+            - property: priority
+              operator: equal
+              value: high
+      check_mode: true
+      register: _missing_group_operator_check
+      ignore_errors: true
+
+    - name: Assert missing group_operator was rejected in check mode
+      ansible.builtin.assert:
+        that:
+          - _missing_group_operator_check.failed == true
+          - "'group_operator' in _missing_group_operator_check.msg"
+        fail_msg: "notification_subscription should fail when group_operator is missing for multiple filters even in check mode"
+
+    # Negative check-mode: non-existent channel should fail even in check mode
+    - name: Attempt to create a subscription with a non-existent channel in check mode
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        channels:
+          - "NonExistentChannel_DoesNotExist"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: true
+      check_mode: true
+      register: _bad_channel_check
+      ignore_errors: true
+
+    - name: Assert non-existent channel was rejected in check mode
+      ansible.builtin.assert:
+        that:
+          - _bad_channel_check.failed == true
+          - "'NonExistentChannel_DoesNotExist' in _bad_channel_check.msg"
+          - "'was not found' in _bad_channel_check.msg"
+        fail_msg: "notification_subscription should fail for non-existent channel even in check mode"
+
+    - name: Create the subscription in check mode
+      microsoft.scom.notification_subscription: &subscription_params
+        name: "{{ scom_test_subscription_name }}"
+        display_name: "{{ scom_test_subscription_display }}"
+        channels: "{{ scom_test_subscription_channels }}"
+        subscribers: "{{ scom_test_subscription_subscriber }}"
+        enabled: false
+        criteria:
+          group_operator: or
+          filters:
+            - property: severity
+              operator: greater
+              value: information
+            - property: priority
+              operator: equal
+              value: high
+      check_mode: true
+      register: _create_check
+
+    - name: Get subscription via info after check mode
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_check
+
+    - name: Assert check mode reported changed and did not create the subscription
+      ansible.builtin.assert:
+        that:
+          - _create_check.changed == true
+          - _info_after_check.subscriptions | length == 0
+        fail_msg: "notification_subscription check mode should report changed=true and must not create the subscription"
+
+    # =========================================================
+    # PHASE 2: create - real
+    # =========================================================
+    - name: Create the subscription
+      microsoft.scom.notification_subscription: *subscription_params
+      register: _create
+
+    - name: Get subscription via info after create
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_create
+
+    - name: Assert the subscription was created correctly
+      ansible.builtin.assert:
+        that:
+          - _create.changed == true
+          - _info_after_create.subscriptions | length == 1
+          - _create.subscription.name == scom_test_subscription_name
+          - _create.subscription.display_name == scom_test_subscription_display
+          - _create.subscription.enabled == false
+          - (_info_after_create.subscriptions | first).name == scom_test_subscription_name
+          - (_info_after_create.subscriptions | first).display_name == scom_test_subscription_display
+          - (_info_after_create.subscriptions | first).enabled == false
+          - scom_test_subscription_channels | difference(_create.subscription.channels) | length == 0
+          - scom_test_subscription_subscriber | difference(_create.subscription.subscribers) | length == 0
+        fail_msg: "notification_subscription did not create the subscription correctly"
+
+    # =========================================================
+    # PHASE 3: idempotency
+    # =========================================================
+    - name: Create the same subscription again (idempotency)
+      microsoft.scom.notification_subscription: *subscription_params
+      register: _create_idem
+
+    - name: Get subscription via info after idempotency check
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_idem
+
+    - name: Assert no change on repeat create and subscription still exists
+      ansible.builtin.assert:
+        that:
+          - _create_idem.changed == false
+          - _info_after_idem.subscriptions | length == 1
+        fail_msg: "notification_subscription must be idempotent when the subscription already exists"
+
+    # =========================================================
+    # PHASE 4: enable and update subscribers
+    # =========================================================
+    - name: Enable the subscription (enabled=true)
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        enabled: true
+      register: _enable
+
+    - name: Get subscription via info after enable
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_enable
+
+    - name: Assert the subscription was enabled
+      ansible.builtin.assert:
+        that:
+          - _enable.changed == true
+          - _enable.subscription.enabled == true
+          - (_info_after_enable.subscriptions | first).enabled == true
+        fail_msg: "notification_subscription should report changed=true when enabling a disabled subscription"
+
+    - name: Enable the subscription again (idempotency)
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        enabled: true
+      register: _enable_idem
+
+    - name: Get subscription via info after enable idempotency
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_enable_idem
+
+    - name: Assert no change enabling an already-enabled subscription
+      ansible.builtin.assert:
+        that:
+          - _enable_idem.changed == false
+          - _enable_idem.subscription.enabled == true
+          - (_info_after_enable_idem.subscriptions | first).enabled == true
+        fail_msg: "notification_subscription must be idempotent when enabled state already matches"
+
+    - name: Update subscribers - add On-call Engineers to existing AnsibleSubscription
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        subscribers: "{{ scom_test_subscription_subscriber_updated }}"
+        enabled: true
+      register: _update_subscribers
+
+    - name: Get subscription via info after subscriber update
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_subscriber_update
+
+    - name: Assert subscribers were updated correctly
+      ansible.builtin.assert:
+        that:
+          - _update_subscribers.changed == true
+          - scom_test_subscription_subscriber_updated | difference(_update_subscribers.subscription.subscribers) | length == 0
+          - scom_test_subscription_subscriber_updated | difference((_info_after_subscriber_update.subscriptions | first).subscribers) | length == 0
+        fail_msg: "notification_subscription should update subscribers in-place and report changed=true"
+
+    - name: Update subscribers again (idempotency)
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        subscribers: "{{ scom_test_subscription_subscriber_updated }}"
+        enabled: true
+      register: _update_subscribers_idem
+
+    - name: Get subscription via info after subscriber update idempotency
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_subscriber_update_idem
+
+    - name: Assert no change updating subscribers that already match
+      ansible.builtin.assert:
+        that:
+          - _update_subscribers_idem.changed == false
+          - scom_test_subscription_subscriber_updated | difference((_info_after_subscriber_update_idem.subscriptions | first).subscribers) | length == 0
+        fail_msg: "notification_subscription must be idempotent when subscribers already match"
+
+    # =========================================================
+    # PHASE 5: verify non-updatable fields warn and do not change
+    # criteria, channels, and subscribers cannot be changed in-place
+    # =========================================================
+    - name: Attempt to change criteria on existing subscription (expect warning, no change)
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        enabled: true
+        criteria:
+          filters:
+            - property: severity
+              operator: equal
+              value: critical
+      register: _criteria_change
+
+    - name: Assert criteria change emitted a warning and reported no change
+      ansible.builtin.assert:
+        that:
+          - _criteria_change.changed == false
+          - _criteria_change.warnings | select('search', 'Criteria cannot be applied') | list | length > 0
+        fail_msg: "notification_subscription should warn and not change when criteria is supplied for an existing subscription"
+
+    - name: Attempt to change channels on existing subscription (expect warning, no change)
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        enabled: true
+        channels:
+          - "AnsibleSubscription"
+      register: _channels_change
+
+    - name: Assert channel change emitted a warning and reported no change
+      ansible.builtin.assert:
+        that:
+          - _channels_change.changed == false
+          - _channels_change.warnings | select('search', 'Channel membership cannot be updated') | list | length > 0
+        fail_msg: "notification_subscription should warn and not change when channels differ on an existing subscription"
+
+    # =========================================================
+    # PHASE 6: remove - check mode
+    # =========================================================
+    - name: Remove the subscription in check mode
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        state: absent
+      check_mode: true
+      register: _remove_check
+
+    - name: Get subscription via info after remove check mode
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_after_remove_check
+
+    - name: Assert check mode reported changed and did not remove the subscription
+      ansible.builtin.assert:
+        that:
+          - _remove_check.changed == true
+          - _info_after_remove_check.subscriptions | length == 1
+        fail_msg: "notification_subscription check mode should report changed=true and must not remove the subscription"
+
+    # =========================================================
+    # PHASE 7: remove - real
+    # =========================================================
+    - name: Remove the subscription
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        state: absent
+      register: _remove
+
+    - name: Assert the subscription was removed
+      ansible.builtin.assert:
+        that:
+          - _remove.changed == true
+        fail_msg: "notification_subscription did not remove the subscription"
+
+    - name: Remove the subscription again (idempotency)
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        state: absent
+      register: _remove_idem
+
+    - name: Assert no change removing an absent subscription
+      ansible.builtin.assert:
+        that:
+          - _remove_idem.changed == false
+        fail_msg: "notification_subscription absent must be idempotent"
+
+    - name: Confirm the subscription is gone
+      microsoft.scom.notification_subscription_info:
+        name: "{{ scom_test_subscription_name }}"
+      register: _info_final
+
+    - name: Assert info shows the subscription no longer exists
+      ansible.builtin.assert:
+        that:
+          - _info_final.subscriptions | length == 0
+        fail_msg: "notification_subscription_info still shows the test subscription after removal"
+
+  always:
+    # =========================================================
+    # ALWAYS: remove only the test subscription
+    # The shared channels and subscriber remian for next integration tests.
+    # =========================================================
+    - name: Safety cleanup - remove the test subscription
+      microsoft.scom.notification_subscription:
+        name: "{{ scom_test_subscription_name }}"
+        state: absent
+      failed_when: false
