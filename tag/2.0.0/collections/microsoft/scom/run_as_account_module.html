@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta content="2.27.0" name="antsibull-docs" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>microsoft.scom.run_as_account module – Manage SCOM Run As Accounts. &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=b54c304f" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="microsoft.scom.run_as_account_info module – Retrieve information about SCOM RunAs accounts." href="run_as_account_info_module.html" />
+    <link rel="prev" title="microsoft.scom.pending_agent_request_info module – Retrieve information about SCOM pending agent management requests." href="pending_agent_request_info_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Microsoft Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Microsoft.Scom</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="index.html#communication">Communication</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Microsoft Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Microsoft.Scom</a></li>
+      <li class="breadcrumb-item active">microsoft.scom.run_as_account module – Manage SCOM Run As Accounts.</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/ansible-collections/microsoft.scom/edit/main/plugins/modules/run_as_account.yml?description=%23%23%23%23%23%20SUMMARY%0A%3C!—%20Your%20description%20here%20–%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-microsoft-scom-run-as-account-module"></span><section id="microsoft-scom-run-as-account-module-manage-scom-run-as-accounts">
+<h1>microsoft.scom.run_as_account module – Manage SCOM Run As Accounts.<a class="headerlink" href="#microsoft-scom-run-as-account-module-manage-scom-run-as-accounts" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/microsoft/scom/">microsoft.scom collection</a> (version 2.0.0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">microsoft.scom</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-microsoft-scom-run-as-account-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">microsoft.scom.run_as_account</span></code>.</p>
+</div>
+<p class="ansible-version-added">New in microsoft.scom 2.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Creates, Removes, and Updates Credentials of SCOM Run As Accounts.</p></li>
+<li><p>Supports 7 SCOM credential types.</p></li>
+<li><p>Existing account credentials can be updated with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p></li>
+<li><p>Only one account <code class="docutils literal notranslate"><span class="pre">name</span></code> per <code class="docutils literal notranslate"><span class="pre">account_type</span></code> can be created.</p></li>
+<li><p>Passwords and community strings are never returned by the module.</p></li>
+</ul>
+</section>
+<section id="requirements">
+<span id="ansible-collections-microsoft-scom-run-as-account-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>Must execute on the SCOM Management Server via WinRM</p></li>
+<li><p>SCOM Operations Console installed on the target host (provides the OperationsManager PowerShell module or the legacy Microsoft.EnterpriseManagement PSSnapins)</p></li>
+<li><p>SCOM 2012 R2, 2016, 2019, or 2022</p></li>
+<li><p>SCOM Operators role (minimum) for the executing account</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-account_type"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-account-type"><strong>account_type</strong></p>
+<a class="ansibleOptionLink" href="#parameter-account_type" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Credential type of the RunAs account.</p>
+<p>Required when <code class="docutils literal notranslate"><span class="pre">state=present</span></code> or when <code class="docutils literal notranslate"><span class="pre">name</span></code> is used with <code class="docutils literal notranslate"><span class="pre">state=absent</span></code>.</p>
+<p>Not required when <code class="docutils literal notranslate"><span class="pre">id</span></code> is used with <code class="docutils literal notranslate"><span class="pre">state=absent</span></code>.</p>
+<p>Immutable once the account is created.</p>
+<p>Determines which credential parameters are required.</p>
+<p><code class="docutils literal notranslate"><span class="pre">windows</span></code> — requires <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, <code class="docutils literal notranslate"><span class="pre">domain</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">action_account</span></code> — requires <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, <code class="docutils literal notranslate"><span class="pre">domain</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">community_string</span></code> — requires <code class="docutils literal notranslate"><span class="pre">community_string</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">basic_authentication</span></code> — requires <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">simple_authentication</span></code> — requires <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">digest_authentication</span></code> — requires <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">binary_authentication</span></code> — requires <code class="docutils literal notranslate"><span class="pre">binary_file_path</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;windows&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;community_string&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;basic_authentication&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;simple_authentication&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;digest_authentication&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;binary_authentication&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;action_account&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-binary_file_path"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-binary-file-path"><strong>binary_file_path</strong></p>
+<a class="ansibleOptionLink" href="#parameter-binary_file_path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Absolute path on the SCOM management server to the binary account file.</p>
+<p>Required for <code class="docutils literal notranslate"><span class="pre">account_type=binary_authentication</span></code>.</p>
+<p>Can be updated with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-community_string"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-community-string"><strong>community_string</strong></p>
+<a class="ansibleOptionLink" href="#parameter-community_string" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>SNMP community string.</p>
+<p>Required for <code class="docutils literal notranslate"><span class="pre">account_type=community_string</span></code>.</p>
+<p>Can be updated with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p>
+<p>Using Ansible Vault or an encrypted string is highly recommended when using real account secrets.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-description"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#parameter-description" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Free-text description for the RunAs account.</p>
+<p>Applied when the account is created and cannot be changed.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-domain"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-domain"><strong>domain</strong></p>
+<a class="ansibleOptionLink" href="#parameter-domain" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Windows domain for the credential.</p>
+<p>Required for <code class="docutils literal notranslate"><span class="pre">account_type=windows</span></code> and <code class="docutils literal notranslate"><span class="pre">account_type=action_account</span></code>.</p>
+<p>For a local user account, the server’s hostname can be specified as the domain.</p>
+<p>Can be updated with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#parameter-id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>GUID of the RunAs account.</p>
+<p>Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">state=present</span></code>, used only for updating an existing account. Fails if not found.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">state=absent</span></code>, removes the account with that GUID.</p>
+<p>Obtain this value with the <code class="docutils literal notranslate"><span class="pre">run_as_account_info</span></code> module.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Display name of the RunAs account.</p>
+<p>Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p>
+<p>Required together with <code class="docutils literal notranslate"><span class="pre">account_type</span></code> when creating a new account.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">state=present</span></code> with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>, the name must be unique; if duplicates exist the module fails and instructs the user to use <code class="docutils literal notranslate"><span class="pre">id</span></code> instead.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">state=absent</span></code>, the account is removed when exactly one match is found. If duplicates exist the module fails and instructs the user to use <code class="docutils literal notranslate"><span class="pre">id</span></code> instead.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-password"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-password"><strong>password</strong></p>
+<a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Password for the credential.</p>
+<p>Required for <code class="docutils literal notranslate"><span class="pre">account_type=windows</span></code>, <code class="docutils literal notranslate"><span class="pre">account_type=action_account</span></code>, <code class="docutils literal notranslate"><span class="pre">account_type=basic_authentication</span></code>, <code class="docutils literal notranslate"><span class="pre">account_type=simple_authentication</span></code>, and <code class="docutils literal notranslate"><span class="pre">account_type=digest_authentication</span></code>.</p>
+<p>Can be updated with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p>
+<p>Using Ansible Vault or an encrypted string is highly recommended when using real account secrets.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p><code class="docutils literal notranslate"><span class="pre">present</span></code> creates the account if it does not exist, or updates its credentials when <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> removes the account. Supply either <code class="docutils literal notranslate"><span class="pre">name</span></code> + <code class="docutils literal notranslate"><span class="pre">account_type</span></code> or <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-update_credential"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-update-credential"><strong>update_credential</strong></p>
+<a class="ansibleOptionLink" href="#parameter-update_credential" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether to update the credential on existing accounts.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">true</span></code> will always result in a change when executing the module.</p>
+<p>All credential parameters required by the <code class="docutils literal notranslate"><span class="pre">account_type</span></code> must be supplied together.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-username"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-parameter-username"><strong>username</strong></p>
+<a class="ansibleOptionLink" href="#parameter-username" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>User name for the credential.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">account_type=windows</span></code> and <code class="docutils literal notranslate"><span class="pre">account_type=action_account</span></code> this is the account name without the domain (the domain is supplied separately via <code class="docutils literal notranslate"><span class="pre">domain</span></code>).</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">account_type=basic_authentication</span></code>, <code class="docutils literal notranslate"><span class="pre">account_type=simple_authentication</span></code>, and <code class="docutils literal notranslate"><span class="pre">account_type=digest_authentication</span></code> this is the full account name.</p>
+<p>Can be updated with <code class="docutils literal notranslate"><span class="pre">update_credential=true</span></code>.</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Notes</a><a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>These modules must run directly on the SCOM Management Server via WinRM. The OperationsManager PowerShell module is only installed on hosts where the SCOM Operations Console has been installed, and the SDK auto-connects to the local Management Group on import. Running on any other Windows host will fail.</p></li>
+<li><p>Supported SCOM versions: 2012 R2, 2016, 2019, 2022.</p></li>
+<li><p>The account executing this module must hold at minimum the SCOM Operators role on the Management Group. Administrative operations (e.g. importing management packs) require the SCOM Administrators role.</p></li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a Windows RunAs account</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Contoso</span><span class="nv"> </span><span class="s">SQL</span><span class="nv"> </span><span class="s">Monitoring</span><span class="nv"> </span><span class="s">Account"</span>
+<span class="w">    </span><span class="nt">account_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">windows</span>
+<span class="w">    </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="s">"CONTOSO"</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">"svc-sql-mon"</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vault_sql_mon_password</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Credential</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">SQL</span><span class="nv"> </span><span class="s">Server</span><span class="nv"> </span><span class="s">monitoring"</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">result</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Store the returned GUID for later use</span>
+<span class="w">  </span><span class="nt">ansible.builtin.set_fact</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sql_mon_guid</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">result.run_as_account.id</span> <span class="cp">}}</span><span class="s">"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update the Windows credential</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Contoso</span><span class="nv"> </span><span class="s">SQL</span><span class="nv"> </span><span class="s">Monitoring</span><span class="nv"> </span><span class="s">Account"</span>
+<span class="w">    </span><span class="nt">account_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">windows</span>
+<span class="w">    </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="s">"CONTOSO"</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">"svc-sql-mon"</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vault_new_password</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">update_credential</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update a specific account by id when multiple accounts share the same name</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">sql_mon_guid</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="s">"CONTOSO"</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="s">"svc-sql-mon"</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vault_new_password</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">update_credential</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a Community String RunAs account</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Network</span><span class="nv"> </span><span class="s">Device</span><span class="nv"> </span><span class="s">SNMP</span><span class="nv"> </span><span class="s">Community"</span>
+<span class="w">    </span><span class="nt">account_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">community_string</span>
+<span class="w">    </span><span class="nt">community_string</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vault_snmp_community</span> <span class="cp">}}</span><span class="s">"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a Binary Authentication RunAs account</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Binary</span><span class="nv"> </span><span class="s">Auth</span><span class="nv"> </span><span class="s">Account"</span>
+<span class="w">    </span><span class="nt">account_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">binary_authentication</span>
+<span class="w">    </span><span class="nt">binary_file_path</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+<span class="w">      </span><span class="no">C:\SCOM_Export\binary_account.pem</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove the RunAs account by GUID</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+<span class="w">    </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">sql_mon_guid</span> <span class="cp">}}</span><span class="s">"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove the RunAs account by name and type (fails if duplicates exist)</span>
+<span class="w">  </span><span class="nt">microsoft.scom.run_as_account</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Contoso</span><span class="nv"> </span><span class="s">SQL</span><span class="nv"> </span><span class="s">Monitoring</span><span class="nv"> </span><span class="s">Account"</span>
+<span class="w">    </span><span class="nt">account_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">windows</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/projects/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible devel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account"><strong>run_as_account</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Details of the RunAs account after applying changes.</p>
+<p>Returned when <code class="docutils literal notranslate"><span class="pre">state=present</span></code> and the account was found or created.</p>
+<p>Not returned when <code class="docutils literal notranslate"><span class="pre">state=absent</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when <code class="docutils literal notranslate"><span class="pre">state=present</span></code> and check mode is off.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/account_type"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-account-type"><strong>account_type</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/account_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>SCOM internal class name of the credential type.</p>
+<p>Maps to the <code class="docutils literal notranslate"><span class="pre">account_type</span></code> parameter as follows.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMWindowsCredentialSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">windows</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMCommunityStringSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">community_string</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMBasicCredentialSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">basic_authentication</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMSimpleCredentialSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">simple_authentication</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMDigestCredentialSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">digest_authentication</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMGenericSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">binary_authentication</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOMActionAccountSecureData</span></code> - <code class="docutils literal notranslate"><span class="pre">action_account</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/description"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-description"><strong>description</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/description" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Description of the RunAs account.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/domain"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-domain"><strong>domain</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/domain" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Domain of the stored credential.</p>
+<p>Populated for <code class="docutils literal notranslate"><span class="pre">windows</span></code> and <code class="docutils literal notranslate"><span class="pre">action_account</span></code> account types; empty for others.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/id"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-id"><strong>id</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Unique GUID of the RunAs account.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/last_modified"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-last-modified"><strong>last_modified</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/last_modified" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Timestamp of the last modification (yyyy-MM-dd HH:mm:ss z).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Display name of the RunAs account.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-run_as_account/user_name"></div><p class="ansible-option-title" id="ansible-collections-microsoft-scom-run-as-account-module-return-run-as-account-user-name"><strong>user_name</strong></p>
+<a class="ansibleOptionLink" href="#return-run_as_account/user_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>User name of the stored credential.</p>
+<p>Populated for <code class="docutils literal notranslate"><span class="pre">windows</span></code>, <code class="docutils literal notranslate"><span class="pre">action_account</span></code>, <code class="docutils literal notranslate"><span class="pre">basic_authentication</span></code>, <code class="docutils literal notranslate"><span class="pre">simple_authentication</span></code>, and <code class="docutils literal notranslate"><span class="pre">digest_authentication</span></code> account types.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Shahar Golshani (&#64;shahargolshani)</p></li>
+<li><p>Ansible Ecosystem Engineering team (&#64;eco-ansible-content)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom/issues" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/ansible-collections/microsoft.scom/issues/new/choose" rel="noopener external" target="_blank">Report an issue</a></span></li>
+<li><span><a class="reference internal" href="index.html#communication-for-microsoft-scom"><span class="std std-ref">Communication</span></a></span></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pending_agent_request_info_module.html" class="btn btn-neutral float-left" title="microsoft.scom.pending_agent_request_info module – Retrieve information about SCOM pending agent management requests." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="run_as_account_info_module.html" class="btn btn-neutral float-right" title="microsoft.scom.run_as_account_info module – Retrieve information about SCOM RunAs accounts." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
