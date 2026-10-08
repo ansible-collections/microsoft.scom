@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: notification_subscription_info
+  version_added: "2.0.0"
   short_description: Retrieve information about SCOM notification subscriptions.
   description:
     - Returns the list of SCOM alert notification subscriptions.

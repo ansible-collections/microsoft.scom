@@ -1,4 +1,0 @@
----
-minor_changes:
-  - notification_channel - new module to create and remove SCOM notification channels (SMTP, command, SMS, and IM).
-  - notification_channel_info - new module to retrieve information about SCOM notification channels.

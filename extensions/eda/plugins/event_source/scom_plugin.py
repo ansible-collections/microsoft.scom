@@ -1,4 +1,4 @@
-# Copyright: (c), Ansible Project
+# Copyright: (c) 2026, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -71,7 +71,7 @@ EXAMPLES = r"""
     - microsoft.scom.scom_plugin:
         scom_server: 10.55.55.100
         username: ECO\Administrator
-        password: Password1!
+        password: "{{ vault_password }}"
         criteria: "(ResolutionState = '0')"
         interval: 10
         ntlm_token_refresh: 300

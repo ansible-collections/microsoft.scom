@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: run_as_account_info
+  version_added: "2.0.0"
   short_description: Retrieve information about SCOM RunAs accounts.
   description:
     - Returns a list of SCOM RunAs accounts, optionally filtered by name or ID.

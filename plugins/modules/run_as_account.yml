@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: run_as_account
+  version_added: "2.0.0"
   short_description: Manage SCOM Run As Accounts.
   description:
     - Creates, Removes, and Updates Credentials of SCOM Run As Accounts.

@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: monitor_override
+  version_added: "2.0.0"
   short_description: Manage SCOM monitor overrides.
   description:
     - Changes the value of an override that is already applied to a SCOM monitor.

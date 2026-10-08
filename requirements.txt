@@ -1,0 +1,3 @@
+pywinrm
+httpx
+httpx-ntlm

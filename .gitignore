@@ -134,3 +134,10 @@ dmypy.json
 
 # AI context modules (lola)
 .lola-req
+.claude/
+.cursor/
+.lola/
+
+# Build
+docs/plans/
+microsoft-scom-2.0.0.tar.gz

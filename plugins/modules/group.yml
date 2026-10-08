@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: group
+  version_added: "2.0.0"
   short_description: Manage SCOM groups with explicit membership.
   description:
     - Creates or removes a SCOM instance group.

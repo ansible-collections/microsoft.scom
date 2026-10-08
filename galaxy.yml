@@ -39,14 +39,15 @@ build_ignore:
   - .ruff_cache
   - .flake8
   - .prettierignore
-  - Containerfile
+  - .pre-commit-config.yaml
   - scripts
   - .pytest_cache
   - tests/integration/inventory.winrm
-  - microsoft-mecm-*.tar.gz
+  - microsoft-scom-*.tar.gz
   - Makefile
   - CODEOWNERS
   - CODE_OF_CONDUCT.md
   - CONTRIBUTING.md
   - REVIEW_CHECKLIST.md
   - .lola-req
+  - .lola

@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: monitor_override_info
+  version_added: "2.0.0"
   short_description: Retrieve SCOM monitors and their overrides by Monitor ID, Display Name, or Target Class.
   description:
     - Returns one or more SCOM monitors together with all of their overrides.

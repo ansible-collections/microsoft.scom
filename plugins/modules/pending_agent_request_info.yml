@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: pending_agent_request_info
+  version_added: "2.0.0"
   short_description: Retrieve information about SCOM pending agent management requests.
   description:
     - Returns the list of SCOM agents awaiting a management action, such as manual approval.

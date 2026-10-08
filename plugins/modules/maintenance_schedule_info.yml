@@ -4,6 +4,7 @@
 
 DOCUMENTATION:
   module: maintenance_schedule_info
+  version_added: "2.0.0"
   short_description: Retrieve information about SCOM maintenance schedules.
   description:
     - Returns the list of SCOM maintenance schedules.
